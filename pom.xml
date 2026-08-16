@@ -13,6 +13,7 @@
         <module>ejb</module>
         <module>ear</module>
         <module>web</module>
+        <module>transection</module>
     </modules>
 
     <properties>
@@ -26,6 +27,12 @@
             <dependency>
                 <groupId>me.dinuka.gtlc</groupId>
                 <artifactId>core</artifactId>
+                <version>1.0</version>
+                <type>jar</type>
+            </dependency>
+            <dependency>
+                <groupId>me.dinuka.gtlc</groupId>
+                <artifactId>transection</artifactId>
                 <version>1.0</version>
                 <type>jar</type>
             </dependency>
