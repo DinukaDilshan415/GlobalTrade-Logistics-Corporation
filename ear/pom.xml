@@ -34,6 +34,12 @@
         </dependency>
         <dependency>
             <groupId>me.dinuka.gtlc</groupId>
+            <artifactId>transection</artifactId>
+            <version>1.0</version>
+            <type>jar</type>
+        </dependency>
+        <dependency>
+            <groupId>me.dinuka.gtlc</groupId>
             <artifactId>web</artifactId>
             <version>1.0</version>
             <type>war</type>
@@ -54,6 +60,11 @@
                             <groupId>me.dinuka.gtlc</groupId>
                             <artifactId>core</artifactId>
                             <bundleFileName>core.jar</bundleFileName>
+                        </jarModule>
+                        <jarModule>
+                            <groupId>me.dinuka.gtlc</groupId>
+                            <artifactId>transection</artifactId>
+                            <bundleFileName>transection.jar</bundleFileName>
                         </jarModule>
                         <ejbModule>
                             <groupId>me.dinuka.gtlc</groupId>

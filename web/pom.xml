@@ -21,6 +21,16 @@
 
     <dependencies>
         <dependency>
+            <groupId>me.dinuka.gtlc</groupId>
+            <artifactId>core</artifactId>
+            <type>jar</type>
+        </dependency>
+        <dependency>
+            <groupId>me.dinuka.gtlc</groupId>
+            <artifactId>ejb</artifactId>
+            <type>ejb</type>
+        </dependency>
+        <dependency>
             <groupId>jakarta.platform</groupId>
             <artifactId>jakarta.jakartaee-api</artifactId>
             <version>10.0.0</version>
