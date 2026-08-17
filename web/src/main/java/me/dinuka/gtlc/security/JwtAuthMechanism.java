@@ -29,6 +29,8 @@ public class JwtAuthMechanism implements HttpAuthenticationMechanism {
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
             String token = authHeader.substring(7);
 
+            System.out.println("Token from Header: " + token);
+
             // Validate token
             if (JwtUtil.isValid(token)) {
                 DecodedJWT jwt = JwtUtil.parseToken(token);
