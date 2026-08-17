@@ -9,12 +9,13 @@ import me.dinuka.gtlc.security.SecurityConstants;
 import java.util.Map;
 
 @Path( "/test")
-@DeclareRoles({SecurityConstants.ROLE_CUSTOMER, SecurityConstants.ROLE_ADMIN})
+@DeclareRoles({SecurityConstants.ROLE_CUSTOMER, SecurityConstants.ROLE_ADMIN, SecurityConstants.CUSTOMS_AGENT, SecurityConstants.MANAGER})
 @RolesAllowed(SecurityConstants.ROLE_CUSTOMER)
 public class Test {
 
     @GET
     public String test() {
+        System.out.println( "Hello World!");
         return "Hello World!";
     }
 

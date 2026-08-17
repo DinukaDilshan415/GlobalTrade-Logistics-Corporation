@@ -20,7 +20,8 @@ import java.time.Instant;
         @NamedQuery(
                 name = "RefreshToken.deleteByUsername",
                 query = "DELETE FROM RefreshToken WHERE email = :username"
-        )
+        ),
+        @NamedQuery(name = "RefreshToken.findByEmail", query = "SELECT rf FROM RefreshToken rf WHERE rf.email = :email")
 
 })
 public class RefreshToken {

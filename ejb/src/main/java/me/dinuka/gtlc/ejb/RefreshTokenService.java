@@ -44,10 +44,16 @@ public class RefreshTokenService {
                 .executeUpdate();
     }
 
-    private void deleteTokenByUsername(String username) {
+    public void deleteTokenByUsername(String username) {
         em.createNamedQuery("RefreshToken.deleteByUsername")
                 .setParameter("username", username)
                 .executeUpdate();
+    }
+
+    public RefreshToken findTokenByUsername(String username){
+        return em.createNamedQuery("RefreshToken.findByEmail", RefreshToken.class)
+                .setParameter("email", username)
+                .getSingleResult();
     }
 
 }
