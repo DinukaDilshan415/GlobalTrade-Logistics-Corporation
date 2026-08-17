@@ -1,11 +1,16 @@
 package me.dinuka.gtlc.rest;
 
+import jakarta.annotation.security.DeclareRoles;
+import jakarta.annotation.security.RolesAllowed;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.Response;
+import me.dinuka.gtlc.security.SecurityConstants;
 
 import java.util.Map;
 
 @Path( "/test")
+@DeclareRoles({SecurityConstants.ROLE_CUSTOMER, SecurityConstants.ROLE_ADMIN})
+@RolesAllowed(SecurityConstants.ROLE_CUSTOMER)
 public class Test {
 
     @GET
