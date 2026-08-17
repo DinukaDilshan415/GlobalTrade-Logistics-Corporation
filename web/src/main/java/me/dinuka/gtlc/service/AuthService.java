@@ -63,6 +63,9 @@ public class AuthService {
 
                 RefreshToken refreshToken = refreshTokenService.create(result.getCallerPrincipal().getName());
 
+                System.out.println("Token: " + token + " Refresh Token: " + refreshToken.getToken() + "");
+                System.out.println("Email: " + result.getCallerPrincipal().getName() + " Roles: " + result.getCallerGroups());
+
                 return Response.status(Response.Status.OK)
                         .entity(Map.of(
                                 "message", "Login successful",
