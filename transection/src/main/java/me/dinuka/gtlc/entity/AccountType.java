@@ -19,11 +19,9 @@ public class AccountType {
     @Column(name = "type", length = 45, nullable = false)
     private String type;
 
-    // Bi-directional relationship mapping back to users
     @OneToMany(mappedBy = "accountType", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<User> users;
 
-    // Constructors
     public AccountType() {}
 
     public AccountType(String type) {

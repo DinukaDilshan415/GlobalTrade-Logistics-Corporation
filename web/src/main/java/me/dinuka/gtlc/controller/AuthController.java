@@ -7,6 +7,7 @@ import jakarta.ws.rs.Path;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
+import me.dinuka.gtlc.dto.AdminDTO;
 import me.dinuka.gtlc.dto.UserDTO;
 import me.dinuka.gtlc.service.AuthService;
 
@@ -22,6 +23,14 @@ public class AuthController {
     @Produces(MediaType.APPLICATION_JSON)
     public Response userLogin(UserDTO body){
         return authService.userAuthService(body);
+    }
+
+    @POST
+    @Path("/admin/login")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response adminLogin(AdminDTO body){
+        return authService.adminAuthService(body);
     }
 
     @POST
