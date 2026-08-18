@@ -8,6 +8,7 @@ import jakarta.inject.Inject;
 import jakarta.security.enterprise.credential.UsernamePasswordCredential;
 import jakarta.security.enterprise.identitystore.CredentialValidationResult;
 import jakarta.security.enterprise.identitystore.IdentityStoreHandler;
+import jakarta.ws.rs.core.NewCookie;
 import jakarta.ws.rs.core.Response;
 import me.dinuka.gtlc.dto.AdminDTO;
 import me.dinuka.gtlc.dto.UserDTO;
@@ -66,6 +67,15 @@ public class AuthService {
                 System.out.println("Token: " + token + " Refresh Token: " + refreshToken.getToken() + "");
                 System.out.println("Email: " + result.getCallerPrincipal().getName() + " Roles: " + result.getCallerGroups());
 
+                NewCookie refreshCookie = new NewCookie.Builder("refreshToken")
+                        .value(refreshToken.getToken())
+                        .path("/")   // Changed from "/auth/refresh"
+                        .maxAge(60 * 60 * 24 * 7) // 7 days
+                        .secure(false)  // Set to true only in production with HTTPS
+                        .httpOnly(true)
+                        .sameSite(NewCookie.SameSite.LAX)  // Changed from STRICT
+                        .build();
+
                 return Response.status(Response.Status.OK)
                         .entity(Map.of(
                                 "message", "Login successful",
@@ -73,6 +83,7 @@ public class AuthService {
                                 "refreshToken", refreshToken.getToken(),
                                 "email", result.getCallerPrincipal().getName(),
                                 "roles", result.getCallerGroups()))
+                        .cookie(refreshCookie)
                         .build();
             }
 
@@ -116,6 +127,15 @@ public class AuthService {
                 System.out.println("Token: " + token + " Refresh Token: " + refreshToken.getToken() + "");
                 System.out.println("username: " + result.getCallerPrincipal().getName() + " Roles: " + result.getCallerGroups());
 
+                NewCookie refreshCookie = new NewCookie.Builder("refreshToken")
+                        .value(refreshToken.getToken())
+                        .path("/")   // Changed from "/auth/refresh"
+                        .maxAge(60 * 60 * 24 * 7) // 7 days
+                        .secure(false)  // Set to true only in production with HTTPS
+                        .httpOnly(true)
+                        .sameSite(NewCookie.SameSite.LAX)  // Changed from STRICT
+                        .build();
+
                 return Response.status(Response.Status.OK)
                         .entity(Map.of(
                                 "message", "Login successful",
@@ -123,6 +143,7 @@ public class AuthService {
                                 "refreshToken", refreshToken.getToken(),
                                 "username", result.getCallerPrincipal().getName(),
                                 "roles", result.getCallerGroups()))
+                        .cookie(refreshCookie)
                         .build();
             }
             return Response.status(Response.Status.UNAUTHORIZED)
@@ -159,6 +180,15 @@ public class AuthService {
 
         String token = JwtUtil.generateToken(email, roles);
 
+        NewCookie refreshCookie = new NewCookie.Builder("refreshToken")
+                .value(newRefreshToken.getToken())
+                .path("/")   // Changed from "/auth/refresh"
+                .maxAge(60 * 60 * 24 * 7) // 7 days
+                .secure(false)  // Set to true only in production with HTTPS
+                .httpOnly(true)
+                .sameSite(NewCookie.SameSite.LAX)  // Changed from STRICT
+                .build();
+
         return Response.status(Response.Status.OK)
                 .entity(
                         Map.of(
@@ -166,6 +196,7 @@ public class AuthService {
                                 "refreshToken", newRefreshToken.getToken(),
                                 "email", email,
                                 "roles", roles))
+                .cookie(refreshCookie)
                 .build();
     }
 
