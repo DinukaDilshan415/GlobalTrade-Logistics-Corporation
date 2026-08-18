@@ -1,10 +1,7 @@
 package me.dinuka.gtlc.controller;
 
 import jakarta.inject.Inject;
-import jakarta.ws.rs.Consumes;
-import jakarta.ws.rs.POST;
-import jakarta.ws.rs.Path;
-import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import me.dinuka.gtlc.dto.AdminDTO;
@@ -35,7 +32,7 @@ public class AuthController {
 
     @POST
     @Path("/refresh")
-    public Response refresh(String refreshToken){
+    public Response refresh(@CookieParam("refreshToken") String refreshToken){
         return authService.refreshToken(refreshToken);
     }
 
