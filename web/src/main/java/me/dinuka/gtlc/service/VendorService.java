@@ -18,9 +18,6 @@ public class VendorService {
     private VendorSessionBean vendorSessionBean;
 
     public Response getVendorProfile(String authHeader){
-
-        System.out.println("Auth Header: " + authHeader);
-
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
             String token = authHeader.substring(7);
 
@@ -47,6 +44,61 @@ public class VendorService {
 
             System.out.println("Authorization header is missing:");
 
+            return Response.status(Response.Status.UNAUTHORIZED).entity(
+                    Map.of("message", "Authorization header is missing")
+            ).build();
+        }
+    }
+
+    public Response getAllVendors(String authHeader){
+        if (authHeader != null && authHeader.startsWith("Bearer ")) {
+            String token = authHeader.substring(7);
+            if (JwtUtil.isValid(token)) {
+                DecodedJWT jwt = JwtUtil.parseToken(token);
+                String userEmail = jwt.getSubject();
+
+                String vendors = vendorSessionBean.getAllVendors();
+
+                return Response.status(Response.Status.OK)
+                        .entity(vendors)
+                        .build();
+            } else {
+                System.out.println("Invalid or expired token:");
+                return Response.status(Response.Status.UNAUTHORIZED).entity(
+                        Map.of("message", "Invalid or expired token")
+                ).build();
+            }
+        } else {
+            System.out.println("Authorization header is missing:");
+            return Response.status(Response.Status.UNAUTHORIZED).entity(
+                    Map.of("message", "Authorization header is missing")
+            ).build();
+        }
+    }
+
+    public Response updateStatus(String authHeader, Map<String, String> body){
+        if (authHeader != null && authHeader.startsWith("Bearer ")) {
+            String token = authHeader.substring(7);
+            if (JwtUtil.isValid(token)) {
+                DecodedJWT jwt = JwtUtil.parseToken(token);
+                String userEmail = jwt.getSubject();
+
+                String vendorId = body.get("vendorId");
+                String newStatus = body.get("newStatus");
+
+                String updated = vendorSessionBean.updateVendorStatus(vendorId, newStatus);
+
+                return Response.status(Response.Status.OK)
+                        .entity(Map.of("message", updated))
+                        .build();
+            } else {
+                System.out.println("Invalid or expired token:");
+                return Response.status(Response.Status.UNAUTHORIZED).entity(
+                        Map.of("message", "Invalid or expired token")
+                ).build();
+            }
+        } else {
+            System.out.println("Authorization header is missing:");
             return Response.status(Response.Status.UNAUTHORIZED).entity(
                     Map.of("message", "Authorization header is missing")
             ).build();

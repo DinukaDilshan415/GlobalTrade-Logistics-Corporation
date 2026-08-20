@@ -6,6 +6,7 @@ import jakarta.ejb.Stateless;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.NoResultException;
 import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.TypedQuery;
 import me.dinuka.gtlc.dto.vendorDTO;
 import me.dinuka.gtlc.entity.Country;
 import me.dinuka.gtlc.entity.User;
@@ -13,6 +14,7 @@ import me.dinuka.gtlc.entity.Vendor;
 import me.dinuka.gtlc.entity.VendorStatus;
 
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.List;
 
 @Stateless
@@ -62,6 +64,32 @@ public class VendorSessionBean {
         return gson.toJson(jsonObject);
     }
 
+    public String getAllVendors(){
+        List<Vendor> resultList = em.createNamedQuery("Vendor.findAll", Vendor.class).getResultList();
+
+        if(resultList.isEmpty()){
+            return "No Vendors Found";
+        } else {
+            ArrayList<vendorDTO> vendorList = new ArrayList<>();
+            for(Vendor vendor : resultList){
+                vendorDTO dto = new vendorDTO();
+                dto.setVendorId(vendor.getVendorIdString());
+                dto.setCompanyName(vendor.getCompanyName());
+                dto.setContactPerson(vendor.getContactPerson());
+                dto.setEmail(vendor.getEmail());
+                dto.setPhone(vendor.getPhone());
+                dto.setAddress(vendor.getAddress());
+                dto.setCountry(vendor.getCountry().getName());
+                dto.setRegistrationNumber(vendor.getRegNumber());
+                dto.setComplianceInfo(vendor.getComplianceInformation());
+                dto.setStatus(vendor.getVendorStatus().getStatus());
+
+                vendorList.add(dto);
+            }
+            return gson.toJson(vendorList);
+        }
+    }
+
     public String saveVendorAccountOpenRequest(String email, vendorDTO dto){
         try {
             User user = em.createNamedQuery("User.findByEmail", User.class)
@@ -106,6 +134,21 @@ public class VendorSessionBean {
 
         } catch (NoResultException e) {
             return "User not found";
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public String updateVendorStatus(String vendorId, String status){
+        try {
+            Vendor vendor = em.createNamedQuery("Vendor.findByVendorId", Vendor.class).setParameter("vendorIdString", vendorId).getSingleResult();
+            VendorStatus vendorStatus = em.createNamedQuery("VendorStatus.findByStatus", VendorStatus.class).setParameter("status", status).getSingleResult();
+
+            vendor.setVendorStatus(vendorStatus);
+            em.merge(vendor);
+
+            return "Vender Status : " + status + " Updated";
+
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
