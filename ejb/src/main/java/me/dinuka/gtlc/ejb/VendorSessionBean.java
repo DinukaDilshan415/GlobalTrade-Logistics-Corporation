@@ -7,15 +7,17 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.NoResultException;
 import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.TypedQuery;
+import me.dinuka.gtlc.dto.ProductDTO;
 import me.dinuka.gtlc.dto.vendorDTO;
-import me.dinuka.gtlc.entity.Country;
-import me.dinuka.gtlc.entity.User;
-import me.dinuka.gtlc.entity.Vendor;
-import me.dinuka.gtlc.entity.VendorStatus;
+import me.dinuka.gtlc.entity.*;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Stateless
 public class VendorSessionBean {
@@ -62,6 +64,36 @@ public class VendorSessionBean {
         }
 
         return gson.toJson(jsonObject);
+    }
+
+    public String getShipments(String email){
+        User user = em.createNamedQuery("User.findByEmail", User.class)
+                .setParameter("email", email)
+                .getSingleResult();
+
+        Vendor vendor = em.createNamedQuery("Vendor.findByUser", Vendor.class)
+                .setParameter("user", user)
+                .getSingleResult();
+
+        List<VendorShipment> shipments = em.createNamedQuery("VendorShipment.findByVendor", VendorShipment.class).setParameter("vendor", vendor).getResultList();
+
+        ArrayList<Map<String, Object>> shipmentList = new ArrayList<>();
+
+        for(VendorShipment shipment : shipments){
+            HashMap<String, Object> shipmentMap = new HashMap<>();
+            shipmentMap.put("id", shipment.getShipmentIdString());
+            shipmentMap.put("category", shipment.getShipCategory().getName());
+            shipmentMap.put("destination", shipment.getWarehouse() != null ? shipment.getWarehouse().getName() : shipment.getDestCountry().getName() + " - " + shipment.getDestAddress());
+            shipmentMap.put("carrier", shipment.getCarrier());
+            shipmentMap.put("expectedDate", shipment.getExpectData().format(DateTimeFormatter.ofPattern("MMM dd, yyyy", java.util.Locale.ENGLISH)));
+            shipmentMap.put("status", shipment.getShipStatus().getName());
+            shipmentMap.put("weight", shipment.getWeight()+" kg");
+            shipmentList.add(shipmentMap);
+        }
+
+        return gson.toJson(Map.of(
+                "shipments", shipmentList
+        ));
     }
 
     public String getAllVendors(){
@@ -152,6 +184,121 @@ public class VendorSessionBean {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public String saveShipment(String email, Map<String, Object> body){
+        User user = em.createNamedQuery("User.findByEmail", User.class)
+                .setParameter("email", email)
+                .getSingleResult();
+
+        Vendor vendor = em.createNamedQuery("Vendor.findByUser", Vendor.class)
+                .setParameter("user", user)
+                .getSingleResult();
+
+        if (!vendor.getVendorStatus().getStatus().equals("active")){
+            return gson.toJson(Map.of(
+                    "status", false,
+                    "message", "Vendor Account is under review. Please wait for approval"
+            ));
+        }
+
+        ShipStatus shipStatus = em.createNamedQuery("ShipStatus.findById", ShipStatus.class).setParameter("id", 3).getSingleResult();
+
+        String shipmentId = body.get("shipmentId").toString();
+
+        List<VendorShipment> resultList = em.createNamedQuery("VendorShipment.findByShipmentIdString", VendorShipment.class).setParameter("shipmentIdString", shipmentId).getResultList();
+        if(!resultList.isEmpty()){
+            return gson.toJson(Map.of(
+                    "status", false,
+                    "message", "Shipment ID already exists. Try Again"));
+        }
+
+        String category = body.get("category").toString();
+        Double weight = Double.parseDouble(body.get("weight").toString());
+        String description = body.get("description").toString();
+        String expectedDate = body.get("expectedDate").toString();
+        String carrier = body.get("carrier").toString();
+        String originAddress = body.get("originAddress").toString();
+        int originCountryId = Integer.parseInt(body.get("originCountryId").toString());
+        String destAddress = body.get("destAddress").toString();
+        int destCountryId = Integer.parseInt(body.get("destCountryId").toString());
+        String destWarehouseId = body.get("destWarehouseId").toString();
+        String recipientName = body.get("recipientName").toString();
+        String recipientPhone = body.get("recipientPhone").toString();
+        String senderName = body.get("senderName").toString();
+        String senderPhone = body.get("senderPhone").toString();
+
+        ArrayList<ProductDTO> products = new ArrayList<>();
+        ArrayList<Map<String, Object>> productMaps = (ArrayList<Map<String, Object>>) body.get("products");
+
+        for (Map<String, Object> productMap : productMaps) {
+            ProductDTO productDTO = ProductDTO.builder()
+                    .name(productMap.get("name").toString())
+                    .hsCode(productMap.get("hsCode").toString())
+                    .quantity(Integer.parseInt(productMap.get("quantity").toString()))
+                    .unitValue(Integer.parseInt(productMap.get("unitValue").toString()))
+                    .build();
+            products.add(productDTO);
+        }
+
+
+        Country originCountry = em.createNamedQuery("Country.findById", Country.class).setParameter("id", originCountryId).getSingleResult();
+        Country destCountry = em.createNamedQuery("Country.findById", Country.class).setParameter("id", destCountryId).getSingleResult();
+
+        ShipCategory shipCategory = em.createNamedQuery("ShipCategory.findByName", ShipCategory.class).setParameter("name", category).getSingleResult();
+
+        Warehouse destWarehouse = null;
+        if(!destWarehouseId.isEmpty()){
+            destWarehouse = em.createNamedQuery("Warehouse.findById", Warehouse.class).setParameter("id", Integer.parseInt(destWarehouseId)).getSingleResult();
+        }
+
+        LocalDateTime expectedDateFormatted = LocalDate.parse(expectedDate).atStartOfDay();
+
+        VendorShipment vendorShipment = new VendorShipment();
+        vendorShipment.setShipmentIdString(shipmentId);
+        vendorShipment.setCarrier(carrier);
+        vendorShipment.setExpectData(expectedDateFormatted);
+        vendorShipment.setWeight(weight);
+        vendorShipment.setDescription(description);
+        vendorShipment.setOriginAddress(originAddress);
+        vendorShipment.setOriginCountry(originCountry);
+        vendorShipment.setSenderName(senderName);
+        vendorShipment.setSenderPhone(senderPhone);
+        vendorShipment.setDestAddress(destAddress);
+        vendorShipment.setWarehouse(destWarehouse);
+        vendorShipment.setRecipientName(recipientName);
+        vendorShipment.setRecipientPhone(recipientPhone);
+        vendorShipment.setShipCategory(shipCategory);
+        vendorShipment.setVendor(vendor);
+        vendorShipment.setDestCountry(destCountry);
+        vendorShipment.setCreatedAt(LocalDateTime.now());
+        vendorShipment.setShipStatus(shipStatus);
+
+        em.persist(vendorShipment);
+
+        for (ProductDTO productDTO : products) {
+            ShipProduct product = new ShipProduct();
+            product.setName(productDTO.getName());
+            product.setHsCode(productDTO.getHsCode());
+            product.setQuantity(productDTO.getQuantity());
+            product.setUnitValue(productDTO.getUnitValue());
+            product.setVendorShipment(vendorShipment);
+            em.persist(product);
+        }
+
+        return gson.toJson(Map.of(
+                "status", true,
+                "message", "Shipment saved successfully",
+                "newShipment", Map.of(
+                        "id", shipmentId,
+                        "category", category,
+                        "destination", (!destWarehouseId.isEmpty() ? destWarehouse.getName() : destCountry.getName()+" - "+destAddress ),
+                        "carrier", carrier,
+                        "expectedDate", expectedDate,
+                        "status", "PENDING",
+                        "weight", weight + " kg"
+                )
+        ));
     }
 
 }

@@ -26,6 +26,14 @@ public class VendorController {
     }
 
     @GET
+    @RolesAllowed(SecurityConstants.ROLE_CUSTOMER)
+    @Path("/getShipments")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getShipments(@HeaderParam("Authorization") String authHeader) {
+        return vendorService.getShipments(authHeader);
+    }
+
+    @GET
     @RolesAllowed(SecurityConstants.ROLE_ADMIN)
     @Path("/getAllVendors")
     @Produces(MediaType.APPLICATION_JSON)
@@ -47,6 +55,14 @@ public class VendorController {
     @Produces(MediaType.APPLICATION_JSON)
     public Response updateStatus(@HeaderParam("Authorization") String authHeader, Map<String, String> body) {
         return vendorService.updateStatus(authHeader, body);
+    }
+
+    @POST
+    @RolesAllowed(SecurityConstants.ROLE_CUSTOMER)
+    @Path("/saveShipment")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response saveShipment(@HeaderParam("Authorization") String authHeader, Map<String, Object> body) {
+        return vendorService.saveShipment(authHeader, body);
     }
 
 }
