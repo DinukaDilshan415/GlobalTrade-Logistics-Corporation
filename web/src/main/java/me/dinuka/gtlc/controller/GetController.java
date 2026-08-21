@@ -22,4 +22,11 @@ public class GetController {
     public Response getCountries(){
         return getService.getCountries();
     }
+
+    @GET
+    @Path("/countriesWithWarehouses")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getCountriesWithWarehouses(){
+        return getService.getCountriesWithWarehouses();
+    }
 }

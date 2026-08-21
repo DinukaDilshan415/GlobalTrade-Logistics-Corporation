@@ -25,4 +25,15 @@ public class GetService {
                     .entity(countries).build();
         }
     }
+
+    public Response getCountriesWithWarehouses(){
+        String countriesWithWarehouses = getSessionBean.getCountriesWithWarehouses();
+
+        if(countriesWithWarehouses == null){
+            return Response.status(Response.Status.NOT_FOUND).build();
+        } else {
+            return Response.status(Response.Status.OK)
+                    .entity(countriesWithWarehouses).build();
+        }
+    }
 }
