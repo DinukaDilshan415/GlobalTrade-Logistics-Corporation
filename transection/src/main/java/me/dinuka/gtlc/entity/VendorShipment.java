@@ -10,7 +10,11 @@ import java.util.List;
         @NamedQuery(name = "VendorShipment.findAll", query = "SELECT v FROM VendorShipment v")
         , @NamedQuery(name = "VendorShipment.findByShipmentId", query = "SELECT v FROM VendorShipment v WHERE v.shipmentIdString = :shipmentIdString")
         , @NamedQuery(name = "VendorShipment.findByShipmentIdString", query = "SELECT v FROM VendorShipment v WHERE v.shipmentIdString = :shipmentIdString")
-        , @NamedQuery(name = "VendorShipment.findByVendor", query = "SELECT v FROM VendorShipment v WHERE v.vendor= :vendor")
+        , @NamedQuery(name = "VendorShipment.findByVendor", query = "SELECT v FROM VendorShipment v WHERE v.vendor= :vendor"),
+        @NamedQuery(
+                name = "VendorShipment.findAllByStatusId",
+                query = "SELECT vs FROM VendorShipment vs WHERE vs.shipStatus.id = :statusId"
+        )
 })
 public class VendorShipment {
 
