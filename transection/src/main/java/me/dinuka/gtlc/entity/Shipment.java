@@ -8,6 +8,7 @@ import java.util.List;
 @Table(name = "shipment")
 @NamedQueries({
         @NamedQuery(name = "Shipment.findAll", query = "SELECT s FROM Shipment s")
+        ,@NamedQuery(name = "Shipment.findAllLatestFirst", query = "SELECT s FROM Shipment s ORDER BY s.createdAt DESC")
         , @NamedQuery(name = "Shipment.findByShipmentId", query = "SELECT s FROM Shipment s WHERE s.shipmentIdString = :shipmentIdString")
 })
 public class Shipment {
@@ -63,6 +64,10 @@ public class Shipment {
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "dest_country_id", nullable = false)
     private Country destCountry;
+
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "admin_id", nullable = false)
+    private Admin admin;
 
     @OneToMany(mappedBy = "shipment", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     private List<ShipmentItem> shipmentItems;
@@ -134,6 +139,14 @@ public class Shipment {
 
     public void setDestCountry(Country destCountry) {
         this.destCountry = destCountry;
+    }
+
+    public Admin getAdmin() {
+        return admin;
+    }
+
+    public void setAdmin(Admin admin) {
+        this.admin = admin;
     }
 
     public Country getOriginCountry() {

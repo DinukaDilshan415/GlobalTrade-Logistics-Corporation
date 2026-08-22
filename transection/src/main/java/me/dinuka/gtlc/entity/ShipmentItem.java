@@ -22,6 +22,9 @@ public class ShipmentItem {
     @JoinColumn(name = "inventory_id", nullable = false)
     private Inventory inventory;
 
+    @Column(name = "quantity")
+    private Integer quantity;
+
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "shipment_id", nullable = false)
     private Shipment shipment;
@@ -36,6 +39,9 @@ public class ShipmentItem {
 
     public Inventory getInventory() { return inventory; }
     public void setInventory(Inventory inventory) { this.inventory = inventory; }
+
+    public Integer getQuantity() { return quantity; }
+    public void setQuantity(Integer quantity) { this.quantity = quantity; }
 
     public Shipment getShipment() { return shipment; }
     public void setShipment(Shipment shipment) { this.shipment = shipment; }

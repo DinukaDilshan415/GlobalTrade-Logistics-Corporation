@@ -36,4 +36,16 @@ public class GetService {
                     .entity(countriesWithWarehouses).build();
         }
     }
+
+    public Response warehouseProducts(String warehouseId){
+        String warehouseProducts = getSessionBean.getWarehouseProducts(warehouseId);
+
+        if(warehouseProducts == null){
+            return Response.status(Response.Status.BAD_REQUEST).build();
+        } else {
+            return Response.status(Response.Status.OK)
+                    .entity(warehouseProducts)
+                    .build();
+        }
+    }
 }
