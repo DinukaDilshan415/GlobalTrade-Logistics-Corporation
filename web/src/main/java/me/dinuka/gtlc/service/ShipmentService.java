@@ -123,4 +123,35 @@ public class ShipmentService {
         }
     }
 
+    public Response updateProgress(String authHeader, Map<String, String> body){
+        if (authHeader != null && authHeader.startsWith("Bearer ")) {
+            String token = authHeader.substring(7);
+            if (JwtUtil.isValid(token)) {
+                DecodedJWT jwt = JwtUtil.parseToken(token);
+                String username = jwt.getSubject();
+
+                String shipment_id = body.get("shipment_id");
+                String status = body.get("status");
+                String location = body.get("location");
+                String description = body.get("description");
+
+                String updated = shipmentSessionBean.updateProgress(shipment_id, status, location, description);
+
+                return Response.status(Response.Status.OK)
+                        .entity(updated)
+                        .build();
+            } else {
+                System.out.println("Invalid or expired token:");
+                return Response.status(Response.Status.UNAUTHORIZED).entity(
+                        Map.of("message", "Invalid or expired token")
+                ).build();
+            }
+        } else {
+            System.out.println("Authorization header is missing:");
+            return Response.status(Response.Status.UNAUTHORIZED).entity(
+                    Map.of("message", "Authorization header is missing")
+            ).build();
+        }
+    }
+
 }

@@ -8,6 +8,7 @@ import java.util.List;
 @Table(name = "shipment")
 @NamedQueries({
         @NamedQuery(name = "Shipment.findAll", query = "SELECT s FROM Shipment s")
+        , @NamedQuery(name = "Shipment.findByShipmentId", query = "SELECT s FROM Shipment s WHERE s.shipmentIdString = :shipmentIdString")
 })
 public class Shipment {
 
