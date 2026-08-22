@@ -3,6 +3,7 @@ package me.dinuka.gtlc.ejb;
 import com.google.gson.Gson;
 import jakarta.ejb.Stateless;
 import jakarta.persistence.EntityManager;
+import jakarta.persistence.NoResultException;
 import jakarta.persistence.PersistenceContext;
 import me.dinuka.gtlc.entity.*;
 
@@ -14,6 +15,65 @@ public class ShipmentSessionBean {
     private EntityManager em;
 
     Gson gson = new Gson();
+
+    public String getShipmentTracking(String shipment_id) {
+        try {
+            Shipment shipment = em.createNamedQuery("Shipment.findByShipmentId", Shipment.class)
+                    .setParameter("shipmentIdString", shipment_id)
+                    .getSingleResult();
+
+            List<ShipmentProgress> shipmentProgresses = em.createNamedQuery("ShipmentProgress.findByShipmentDesc", ShipmentProgress.class)
+                    .setParameter("shipment", shipment)
+                    .getResultList();
+
+            List<ShipmentItem> shipmentItemList = em.createNamedQuery("ShipmentItem.findByShipment", ShipmentItem.class)
+                    .setParameter("shipment", shipment)
+                    .getResultList();
+
+            HashMap<String, Object> shipmentDetails = new HashMap<>();
+            shipmentDetails.put("id", shipment.getShipmentIdString());
+            shipmentDetails.put("status", shipmentProgresses.get(0).getShipStatus().getName());
+            shipmentDetails.put("originCountry", shipment.getOriginCountry().getName());
+            shipmentDetails.put("originAddress", shipment.getOriginAddress());
+            shipmentDetails.put("destCountry", shipment.getDestCountry().getName());
+            shipmentDetails.put("destAddress", shipment.getDestAddress());
+            shipmentDetails.put("expectedDate", shipment.getExpectData()
+                    .format(java.time.format.DateTimeFormatter
+                            .ofPattern("MMM dd, yyyy", java.util.Locale.ENGLISH)));
+            shipmentDetails.put("expectedTime", "");
+            shipmentDetails.put("carrier", shipment.getCarrier());
+            shipmentDetails.put("weight", shipment.getWeight() + " kg");
+            shipmentDetails.put("category", "");
+            shipmentDetails.put("totalItems", shipmentItemList.size());
+            shipmentDetails.put("customsCleared", true);
+
+            ArrayList<HashMap<String, Object>> shipmentProgressesList = new ArrayList<>();
+
+            for (ShipmentProgress shipmentProgress : shipmentProgresses) {
+                HashMap<String, Object> shipmentProgressMap = new HashMap<>();
+                shipmentProgressMap.put("status", shipmentProgress.getShipStatus().getName());
+                shipmentProgressMap.put("location", shipmentProgress.getLocation());
+                shipmentProgressMap.put("description", shipmentProgress.getDescription());
+                shipmentProgressMap.put("datetime", shipmentProgress.getCreatedAt()
+                        .format(java.time.format.DateTimeFormatter
+                                .ofPattern("MMM dd, yyyy HH:mm: a", java.util.Locale.ENGLISH)));
+                shipmentProgressesList.add(shipmentProgressMap);
+            }
+
+            return gson.toJson(Map.of(
+                    "status", true,
+                    "shipmentDetails", shipmentDetails,
+                    "shipmentProgresses", shipmentProgressesList
+            ));
+
+        } catch (NoResultException e) {
+            e.printStackTrace();
+            return gson.toJson(Map.of(
+                    "status", false,
+                    "message", "Invalid Shipment ID, Please try again"
+            ));
+        }
+    }
 
     public ArrayList<HashMap<String, Object>> getAllPendingShipments() {
 

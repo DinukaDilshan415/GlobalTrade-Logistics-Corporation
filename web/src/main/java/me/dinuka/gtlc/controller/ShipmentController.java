@@ -17,6 +17,13 @@ public class ShipmentController {
     private ShipmentService shipmentService;
 
     @GET
+    @Path("/tracking/{id}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response tracking(@HeaderParam("Authorization") String authHeader, @PathParam("id") String trackingId) {
+        return shipmentService.trackShipment(authHeader, trackingId);
+    }
+
+    @GET
     @RolesAllowed(SecurityConstants.ROLE_ADMIN)
     @Path("/getAllPendingShipmets")
     @Produces(MediaType.APPLICATION_JSON)
