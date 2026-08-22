@@ -7,6 +7,7 @@ import jakarta.persistence.NoResultException;
 import jakarta.persistence.PersistenceContext;
 import me.dinuka.gtlc.entity.*;
 
+import java.time.LocalDate;
 import java.util.*;
 
 @Stateless
@@ -110,7 +111,7 @@ public class ShipmentSessionBean {
     }
 
     public ArrayList<HashMap<String, Object>> getAllActiveShipments() {
-        List<Shipment> resultList = em.createNamedQuery("Shipment.findAll", Shipment.class).getResultList();
+        List<Shipment> resultList = em.createNamedQuery("Shipment.findAllLatestFirst", Shipment.class).getResultList();
 
         if (resultList.isEmpty()) {
             return new ArrayList<>();
@@ -144,7 +145,10 @@ public class ShipmentSessionBean {
         }
     }
 
-    public String updatePendingShipment(String shipment_id, String category, String status) {
+    public String updatePendingShipment(String username, String shipment_id, String category, String status) {
+
+        Admin admin = em.createNamedQuery("Admin.findByUsername", Admin.class).setParameter("username", username).getSingleResult();
+
         VendorShipment vendorShipment = em.createNamedQuery("VendorShipment.findByShipmentId", VendorShipment.class)
                 .setParameter("shipmentIdString", shipment_id)
                 .getSingleResult();
@@ -177,6 +181,7 @@ public class ShipmentSessionBean {
                     shipment.setUpdatedAt(java.time.LocalDateTime.now());
                     shipment.setOriginCountry(vendorShipment.getOriginCountry());
                     shipment.setDestCountry(vendorShipment.getDestCountry());
+                    shipment.setAdmin(admin);
 
                     em.persist(shipment);
 
@@ -184,6 +189,7 @@ public class ShipmentSessionBean {
                         ShipmentItem shipmentItem = new ShipmentItem();
                         shipmentItem.setShipment(shipment);
                         shipmentItem.setShipProduct(shipProduct);
+                        shipmentItem.setQuantity(shipProduct.getQuantity());
                         em.persist(shipmentItem);
                     }
 
@@ -251,6 +257,129 @@ public class ShipmentSessionBean {
         return gson.toJson(Map.of(
                 "status", true,
                 "message", "Shipment Progress Updated"
+        ));
+    }
+
+    public String saveShipment(String username, Map<String, Object> body) {
+        Admin admin = em.createNamedQuery("Admin.findByUsername", Admin.class)
+                .setParameter("username", username)
+                .getSingleResult();
+
+        String carrier = (String) body.get("carrier");
+        String category = (String) body.get("category");
+        String description = (String) body.get("description");
+        String destAddress = (String) body.get("destAddress");
+        String destCountry = (String) body.get("destCountry");
+        String expectedDate = (String) body.get("expect_date");
+        String originCountryId = (String) body.get("originCountryId");
+        String originWarehouseId = (String) body.get("originWarehouseId");
+        String recipientName = (String) body.get("recipientName");
+        String recipientPhone = (String) body.get("recipientPhone");
+        String shipment_id = (String) body.get("shipment_id");
+        String status = (String) body.get("status");
+        String weight = (String) body.get("weight");
+
+        ArrayList<Map<String, Object>> productMaps = (ArrayList<Map<String, Object>>) body.get("products");
+
+        Country originCountry = em.createNamedQuery("Country.findById", Country.class)
+                .setParameter("id", Integer.parseInt(originCountryId))
+                .getSingleResult();
+
+        Country destinationCountry = em.createNamedQuery("Country.findByName", Country.class)
+                .setParameter("name", destCountry)
+                .getSingleResult();
+
+        Warehouse originWarehouse = em.createNamedQuery("Warehouse.findById", Warehouse.class)
+                .setParameter("id", Integer.parseInt(originWarehouseId))
+                .getSingleResult();
+
+        ShipStatus shipStatus = em.createNamedQuery("ShipStatus.findByName", ShipStatus.class)
+                .setParameter("name", status)
+                .getSingleResult();
+
+        Shipment shipment = new Shipment();
+        shipment.setShipmentIdString(shipment_id);
+        shipment.setCarrier(carrier);
+        shipment.setExpectData(LocalDate.parse(expectedDate).atStartOfDay());
+        shipment.setWeight(Double.parseDouble(weight));
+        shipment.setDescription(description);
+        shipment.setOriginAddress(originCountry.getName() + " - " + originWarehouse.getName());
+        shipment.setSenderName("Global Trade Logistics Corporation");
+        shipment.setSenderPhone("0123456789");
+        shipment.setDestAddress(destAddress);
+        shipment.setRecipientName(recipientName);
+        shipment.setRecipientPhone(recipientPhone);
+        shipment.setCreatedAt(java.time.LocalDateTime.now());
+        shipment.setUpdatedAt(java.time.LocalDateTime.now());
+        shipment.setOriginCountry(originCountry);
+        shipment.setDestCountry(destinationCountry);
+        shipment.setAdmin(admin);
+        em.persist(shipment);
+
+        for (Map<String, Object> productMap : productMaps) {
+            String id = (String) productMap.get("id");
+            Object shipQuantityObj = productMap.get("shipQuantity");
+            int shipQuantity;
+
+            if (shipQuantityObj instanceof Number) {
+                shipQuantity = ((Number) shipQuantityObj).intValue();
+            } else if (shipQuantityObj instanceof String) {
+                shipQuantity = Integer.parseInt((String) shipQuantityObj);
+            } else {
+                return gson.toJson(Map.of(
+                        "status", false,
+                        "message", "Invalid shipment quantity format"
+                ));
+            }
+
+            Inventory inventory = em.createNamedQuery("Inventory.findById", Inventory.class)
+                    .setParameter("id", Integer.parseInt(id))
+                    .getSingleResult();
+
+            if (inventory.getQuantity() >= shipQuantity) {
+                inventory.setQuantity(inventory.getQuantity() - shipQuantity);
+                em.merge(inventory);
+
+                ShipmentItem shipmentItem = new ShipmentItem();
+                shipmentItem.setInventory(inventory);
+                shipmentItem.setQuantity(shipQuantity);
+                shipmentItem.setShipment(shipment);
+                em.persist(shipmentItem);
+
+            } else {
+                return gson.toJson(Map.of(
+                        "status", false,
+                        "message", "Not enough " + inventory.getProductName() + " in stock"
+                ));
+            }
+        }
+
+        ShipmentProgress shipmentProgress = new ShipmentProgress();
+        shipmentProgress.setShipStatus(shipStatus);
+        shipmentProgress.setLocation(originWarehouse.getName() + " - " + originCountry.getName());
+        shipmentProgress.setDescription("Shipment Accepted By Global Trade Logistics Corporation");
+        shipmentProgress.setCreatedAt(java.time.LocalDateTime.now());
+        shipmentProgress.setShipment(shipment);
+        em.persist(shipmentProgress);
+
+        HashMap<String, Object> shipmentDetails = new HashMap<>();
+        shipmentDetails.put("shipment_id", shipment.getShipmentIdString());
+        shipmentDetails.put("carrier", shipment.getCarrier());
+        shipmentDetails.put("expect_date", shipment.getExpectData().format(java.time.format.DateTimeFormatter.ofPattern("MMM dd, yyyy", java.util.Locale.ENGLISH)));
+        shipmentDetails.put("weight", shipment.getWeight() + " kg");
+        shipmentDetails.put("description", shipment.getDescription());
+        shipmentDetails.put("originCountry", shipment.getOriginCountry().getName());
+        shipmentDetails.put("originAddress", shipment.getOriginAddress());
+        shipmentDetails.put("destCountry", shipment.getDestCountry().getName());
+        shipmentDetails.put("destAddress", shipment.getDestAddress());
+        shipmentDetails.put("category", "");
+        shipmentDetails.put("status", shipStatus.getName());
+        shipmentDetails.put("products", new ArrayList<>());
+
+        return gson.toJson(Map.of(
+                "status", true,
+                "message", "Shipment Saved",
+                "newShip", shipmentDetails
         ));
     }
 }

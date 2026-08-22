@@ -1,10 +1,7 @@
 package me.dinuka.gtlc.controller;
 
 import jakarta.inject.Inject;
-import jakarta.ws.rs.Consumes;
-import jakarta.ws.rs.GET;
-import jakarta.ws.rs.Path;
-import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import me.dinuka.gtlc.service.GetService;
@@ -28,5 +25,12 @@ public class GetController {
     @Produces(MediaType.APPLICATION_JSON)
     public Response getCountriesWithWarehouses(){
         return getService.getCountriesWithWarehouses();
+    }
+
+    @GET
+    @Path("/warehouseProducts/{warehouseId}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response warehouseProducts(@PathParam("warehouseId") String warehouseId){
+        return getService.warehouseProducts(warehouseId);
     }
 }

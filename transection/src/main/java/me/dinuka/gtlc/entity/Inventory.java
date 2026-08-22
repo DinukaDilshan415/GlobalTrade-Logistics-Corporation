@@ -7,6 +7,9 @@ import java.util.List;
 @Table(name = "inventory")
 @NamedQueries({
         @NamedQuery(name = "Inventory.findAll", query = "SELECT i FROM Inventory i")
+        , @NamedQuery(name = "Inventory.findById", query = "SELECT i FROM Inventory i WHERE i.id = :id")
+        , @NamedQuery(name = "Inventory.findByWarehouse", query = "SELECT i FROM Inventory i WHERE i.warehouse = :warehouse")
+        , @NamedQuery(name = "Inventory.findByWarehouseWithValidQty", query = "SELECT i FROM Inventory i WHERE i.warehouse = :warehouse AND i.quantity > 0")
 })
 public class Inventory {
 

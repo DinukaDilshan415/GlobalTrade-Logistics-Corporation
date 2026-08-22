@@ -54,4 +54,12 @@ public class ShipmentController {
     public Response updateProgress(@HeaderParam("Authorization") String authHeader, Map<String, String> body) {
         return shipmentService.updateProgress(authHeader, body);
     }
+
+    @POST
+    @RolesAllowed(SecurityConstants.ROLE_ADMIN)
+    @Path("/saveShipment")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response saveShipment(@HeaderParam("Authorization") String authHeader, Map<String, Object> body) {
+        return shipmentService.saveShipment(authHeader, body);
+    }
 }

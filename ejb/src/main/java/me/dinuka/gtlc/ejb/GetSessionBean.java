@@ -5,8 +5,10 @@ import jakarta.ejb.Stateless;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import me.dinuka.gtlc.entity.Country;
+import me.dinuka.gtlc.entity.Inventory;
 import me.dinuka.gtlc.entity.Warehouse;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -32,6 +34,35 @@ public class GetSessionBean {
                 "countries", countries,
                 "warehouseCountries", countryList,
                 "warehouses", warehouses));
+    }
+
+    public String getWarehouseProducts(String warehouseId){
+        Warehouse warehouse = em.createNamedQuery("Warehouse.findById", Warehouse.class)
+                .setParameter("id", warehouseId)
+                .getSingleResult();
+
+        List<Inventory> inventoryList = em.createNamedQuery("Inventory.findByWarehouseWithValidQty", Inventory.class)
+                .setParameter("warehouse", warehouse)
+                .getResultList();
+
+        if(inventoryList.isEmpty()){
+            return null;
+        } else {
+            ArrayList<Map<String, Object>> inventoryMap = new ArrayList<>();
+            for(Inventory inventory : inventoryList){
+                Map<String, Object> inventoryMap1 = Map.of(
+                        "id", inventory.getId(),
+                        "name", inventory.getProductName(),
+                        "hsCode", inventory.getHsCode(),
+                        "availableQty", inventory.getQuantity(),
+                        "unitValue", inventory.getUnitValue(),
+                        "warehouseId", inventory.getWarehouse().getId()
+                );
+                inventoryMap.add(inventoryMap1);
+            }
+
+            return gson.toJson(inventoryMap);
+        }
     }
 
 }
