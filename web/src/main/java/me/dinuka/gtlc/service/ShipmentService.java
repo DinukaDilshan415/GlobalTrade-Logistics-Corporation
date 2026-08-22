@@ -19,6 +19,32 @@ public class ShipmentService {
     @Inject
     private ShipmentSessionBean shipmentSessionBean;
 
+    public Response trackShipment(String authHeader, String shipment_id){
+        if (authHeader != null && authHeader.startsWith("Bearer ")) {
+            String token = authHeader.substring(7);
+            if (JwtUtil.isValid(token)) {
+                DecodedJWT jwt = JwtUtil.parseToken(token);
+                String username = jwt.getSubject();
+
+                String shipmentTracking = shipmentSessionBean.getShipmentTracking(shipment_id);
+
+                return Response.status(Response.Status.OK)
+                        .entity(shipmentTracking)
+                        .build();
+            } else {
+                System.out.println("Invalid or expired token:");
+                return Response.status(Response.Status.UNAUTHORIZED).entity(
+                        Map.of("message", "Invalid or expired token")
+                ).build();
+            }
+        } else {
+            System.out.println("Authorization header is missing:");
+            return Response.status(Response.Status.UNAUTHORIZED).entity(
+                    Map.of("message", "Authorization header is missing")
+            ).build();
+        }
+    }
+
     public Response getAllPendingShipmets(String authHeader){
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
             String token = authHeader.substring(7);

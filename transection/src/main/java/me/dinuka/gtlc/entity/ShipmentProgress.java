@@ -7,7 +7,11 @@ import java.time.LocalDateTime;
 @Table(name = "shipment_progress")
 @NamedQueries({
         @NamedQuery(name = "ShipmentProgress.findAll", query = "SELECT s FROM ShipmentProgress s")
-        , @NamedQuery(name = "ShipmentProgress.findByShipment", query = "SELECT s FROM ShipmentProgress s WHERE s.shipment = :shipment")
+        , @NamedQuery(name = "ShipmentProgress.findByShipment", query = "SELECT s FROM ShipmentProgress s WHERE s.shipment = :shipment"),
+        @NamedQuery(
+                name = "ShipmentProgress.findByShipmentDesc",
+                query = "SELECT s FROM ShipmentProgress s WHERE s.shipment = :shipment ORDER BY s.createdAt DESC"
+        )
 })
 public class ShipmentProgress {
 
