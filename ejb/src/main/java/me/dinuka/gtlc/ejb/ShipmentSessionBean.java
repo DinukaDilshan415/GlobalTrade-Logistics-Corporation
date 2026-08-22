@@ -6,15 +6,14 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import me.dinuka.gtlc.entity.*;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 @Stateless
 public class ShipmentSessionBean {
     @PersistenceContext(unitName = "gtlcPU")
     private EntityManager em;
+
+    Gson gson = new Gson();
 
     public ArrayList<HashMap<String, Object>> getAllPendingShipments() {
 
@@ -67,7 +66,7 @@ public class ShipmentSessionBean {
                         .setParameter("shipment", shipment)
                         .getResultList();
                 if (!progressList.isEmpty()) {
-                    shipmentMap.put("status", progressList.get(0).getShipStatus().getName());
+                    shipmentMap.put("status", progressList.get(progressList.size() - 1).getShipStatus().getName());
                 }
                 shipmentMap.put("carrier", shipment.getCarrier());
                 shipmentMap.put("expect_date", shipment.getExpectData().format(java.time.format.DateTimeFormatter.ofPattern("MMM dd, yyyy", java.util.Locale.ENGLISH)));
@@ -171,5 +170,27 @@ public class ShipmentSessionBean {
         } else {
             return "Shipment is not in Pending Status";
         }
+    }
+
+    public String updateProgress(String shipment_id, String status, String location, String description) {
+        ShipStatus shipStatus = em.createNamedQuery("ShipStatus.findByName", ShipStatus.class)
+                .setParameter("name", status)
+                .getSingleResult();
+
+        Shipment shipment = em.createNamedQuery("Shipment.findByShipmentId", Shipment.class).setParameter("shipmentIdString", shipment_id).getSingleResult();
+
+        ShipmentProgress shipmentProgress = new ShipmentProgress();
+        shipmentProgress.setShipStatus(shipStatus);
+        shipmentProgress.setLocation(location);
+        shipmentProgress.setDescription(description);
+        shipmentProgress.setCreatedAt(java.time.LocalDateTime.now());
+        shipmentProgress.setShipment(shipment);
+
+        em.persist(shipmentProgress);
+
+        return gson.toJson(Map.of(
+                "status", true,
+                "message", "Shipment Progress Updated"
+        ));
     }
 }
