@@ -209,8 +209,22 @@ public class ShipmentSessionBean {
                     List<Inventory> inventoryList = em.createNamedQuery("Inventory.findAll", Inventory.class).getResultList();
 
                     for (ShipProduct shipProduct : shipProducts) {
-                        if (inventoryList.isEmpty()) {
-                            System.out.println("New Inventory");
+                        boolean foundMatch = false;
+
+                        if (!inventoryList.isEmpty()) {
+                            for (Inventory inventory : inventoryList) {
+                                if (inventory.getHsCode().equals(shipProduct.getHsCode()) && Objects.equals(inventory.getWarehouse().getId(), warehouse.getId())) {
+                                    System.out.println("Inventory Update: Updated quantity for HS Code " + shipProduct.getHsCode());
+                                    inventory.setQuantity(inventory.getQuantity() + shipProduct.getQuantity());
+                                    em.merge(inventory);
+                                    foundMatch = true;
+                                    break;
+                                }
+                            }
+                        }
+
+                        if (!foundMatch) {
+                            System.out.println("New Inventory: Creating new inventory for HS Code " + shipProduct.getHsCode());
                             Inventory newInventory = new Inventory();
                             newInventory.setProductName(shipProduct.getName());
                             newInventory.setHsCode(shipProduct.getHsCode());
@@ -218,18 +232,10 @@ public class ShipmentSessionBean {
                             newInventory.setUnitValue(shipProduct.getUnitValue());
                             newInventory.setWarehouse(warehouse);
                             em.persist(newInventory);
-                        } else {
-                            for (Inventory inventory : inventoryList) {
-                                if (inventory.getHsCode().equals(shipProduct.getHsCode()) && Objects.equals(inventory.getWarehouse().getId(), warehouse.getId())) {
-                                    System.out.println("Inventory Update");
-                                    inventory.setQuantity(inventory.getQuantity() + shipProduct.getQuantity());
-                                    em.merge(inventory);
-                                    break;
-                                }
-                            }
                         }
                     }
                 }
+
             }
             return "Shipment Updated";
 
