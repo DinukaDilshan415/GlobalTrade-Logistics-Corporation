@@ -5,6 +5,11 @@ import java.util.List;
 
 @Entity
 @Table(name = "custom_status")
+@NamedQueries({
+        @NamedQuery(name = "CustomStatus.findAll", query = "SELECT c FROM CustomStatus c")
+        , @NamedQuery(name = "CustomStatus.findByStatus", query = "SELECT c FROM CustomStatus c WHERE c.status = :status")
+        , @NamedQuery(name = "CustomStatus.findByStatusId", query = "SELECT c FROM CustomStatus c WHERE c.id = :id")
+})
 public class CustomStatus {
 
     @Id
@@ -16,7 +21,6 @@ public class CustomStatus {
 
     public CustomStatus() {}
 
-    // Getters and Setters
     public Integer getId() { return id; }
     public void setId(Integer id) { this.id = id; }
 

@@ -8,6 +8,8 @@ import jakarta.persistence.PersistenceContext;
 import me.dinuka.gtlc.entity.*;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 @Stateless
@@ -201,6 +203,7 @@ public class ShipmentSessionBean {
                     shipmentProgress.setShipment(shipment);
                     em.persist(shipmentProgress);
 
+                    openCustomCase(shipment);
                 } else {
                     Warehouse warehouse = em.createNamedQuery("Warehouse.findById", Warehouse.class)
                             .setParameter("id", vendorShipment.getWarehouse().getId())
@@ -238,7 +241,6 @@ public class ShipmentSessionBean {
 
             }
             return "Shipment Updated";
-
         } else {
             return "Shipment is not in Pending Status";
         }
@@ -368,24 +370,64 @@ public class ShipmentSessionBean {
         shipmentProgress.setShipment(shipment);
         em.persist(shipmentProgress);
 
-        HashMap<String, Object> shipmentDetails = new HashMap<>();
-        shipmentDetails.put("shipment_id", shipment.getShipmentIdString());
-        shipmentDetails.put("carrier", shipment.getCarrier());
-        shipmentDetails.put("expect_date", shipment.getExpectData().format(java.time.format.DateTimeFormatter.ofPattern("MMM dd, yyyy", java.util.Locale.ENGLISH)));
-        shipmentDetails.put("weight", shipment.getWeight() + " kg");
-        shipmentDetails.put("description", shipment.getDescription());
-        shipmentDetails.put("originCountry", shipment.getOriginCountry().getName());
-        shipmentDetails.put("originAddress", shipment.getOriginAddress());
-        shipmentDetails.put("destCountry", shipment.getDestCountry().getName());
-        shipmentDetails.put("destAddress", shipment.getDestAddress());
-        shipmentDetails.put("category", "");
-        shipmentDetails.put("status", shipStatus.getName());
-        shipmentDetails.put("products", new ArrayList<>());
+        boolean opened = openCustomCase(shipment);
 
-        return gson.toJson(Map.of(
-                "status", true,
-                "message", "Shipment Saved",
-                "newShip", shipmentDetails
-        ));
+        if (opened) {
+            HashMap<String, Object> shipmentDetails = new HashMap<>();
+            shipmentDetails.put("shipment_id", shipment.getShipmentIdString());
+            shipmentDetails.put("carrier", shipment.getCarrier());
+            shipmentDetails.put("expect_date", shipment.getExpectData().format(java.time.format.DateTimeFormatter.ofPattern("MMM dd, yyyy", java.util.Locale.ENGLISH)));
+            shipmentDetails.put("weight", shipment.getWeight() + " kg");
+            shipmentDetails.put("description", shipment.getDescription());
+            shipmentDetails.put("originCountry", shipment.getOriginCountry().getName());
+            shipmentDetails.put("originAddress", shipment.getOriginAddress());
+            shipmentDetails.put("destCountry", shipment.getDestCountry().getName());
+            shipmentDetails.put("destAddress", shipment.getDestAddress());
+            shipmentDetails.put("category", "");
+            shipmentDetails.put("status", shipStatus.getName());
+            shipmentDetails.put("products", new ArrayList<>());
+
+            return gson.toJson(Map.of(
+                    "status", true,
+                    "message", "Shipment Saved",
+                    "newShip", shipmentDetails
+            ));
+        } else {
+            return gson.toJson(Map.of(
+                    "status", false,
+                    "message", "Failed to open custom case"
+            ));
+        }
+    }
+
+    private boolean openCustomCase(Shipment shipment) {
+        try {
+            LocalDateTime now = LocalDateTime.now();
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyMMdd-HHmmss");
+            String caseNumber = "C-" + now.format(formatter);
+
+            CustomStatus customStatus = em.createNamedQuery("CustomStatus.findByStatusId", CustomStatus.class)
+                    .setParameter("id", 1)
+                    .getSingleResult();
+
+            CustomsCase customsCase = new CustomsCase();
+            customsCase.setCaseNumber(caseNumber);
+            customsCase.setShipment(shipment);
+            customsCase.setRiskLevel("-");
+            customsCase.setCustomsValue(0.0);
+            customsCase.setEstimatedDuty(0.0);
+            customsCase.setDeadline(now.plusDays(2));
+            customsCase.setSubmittedAt(now);
+            customsCase.setResponseAt(now);
+            customsCase.setRemarks("-");
+            customsCase.setCustomAgent(null);
+            customsCase.setCustomStatus(customStatus);
+
+            em.persist(customsCase);
+            return true;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
     }
 }

@@ -6,6 +6,12 @@ import java.util.List;
 
 @Entity
 @Table(name = "customs_cases")
+@NamedQueries({
+        @NamedQuery(name = "CustomsCase.findAll", query = "SELECT c FROM CustomsCase c")
+        , @NamedQuery(name = "CustomsCase.findAllInOrder", query = "SELECT c FROM CustomsCase c ORDER BY c.submittedAt DESC ")
+        , @NamedQuery(name = "CustomsCase.findByCaseNumber", query = "SELECT c FROM CustomsCase c WHERE c.caseNumber = :caseNumber")
+        , @NamedQuery(name = "CustomsCase.findByShipment", query = "SELECT c FROM CustomsCase c WHERE c.shipment = :shipment")
+})
 public class CustomsCase {
 
     @Id
@@ -42,7 +48,7 @@ public class CustomsCase {
     private Shipment shipment;
 
     @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "custom_agent_id", nullable = false)
+    @JoinColumn(name = "custom_agent_id")
     private CustomAgent customAgent;
 
     @ManyToOne(fetch = FetchType.EAGER)
