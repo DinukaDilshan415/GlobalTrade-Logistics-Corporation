@@ -9,6 +9,7 @@ import java.util.List;
 @NamedQueries({
         @NamedQuery(name = "CustomsCase.findAll", query = "SELECT c FROM CustomsCase c")
         , @NamedQuery(name = "CustomsCase.findAllInOrder", query = "SELECT c FROM CustomsCase c ORDER BY c.submittedAt DESC ")
+        , @NamedQuery(name = "CustomsCase.findById", query = "SELECT c FROM CustomsCase c WHERE c.id = :id")
         , @NamedQuery(name = "CustomsCase.findByCaseNumber", query = "SELECT c FROM CustomsCase c WHERE c.caseNumber = :caseNumber")
         , @NamedQuery(name = "CustomsCase.findByShipment", query = "SELECT c FROM CustomsCase c WHERE c.shipment = :shipment")
 })
