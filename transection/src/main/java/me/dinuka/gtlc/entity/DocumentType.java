@@ -5,6 +5,11 @@ import java.util.List;
 
 @Entity
 @Table(name = "document_type")
+@NamedQueries({
+        @NamedQuery(name = "DocumentType.findAll", query = "SELECT d FROM DocumentType d")
+        , @NamedQuery(name = "DocumentType.findByType", query = "SELECT d FROM DocumentType d WHERE d.type = :type")
+        , @NamedQuery(name = "DocumentType.findByTypeId", query = "SELECT d FROM DocumentType d WHERE d.id = :id")
+})
 public class DocumentType {
 
     @Id

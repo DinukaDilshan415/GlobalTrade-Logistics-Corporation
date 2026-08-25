@@ -253,6 +253,15 @@ public class ShipmentSessionBean {
 
         Shipment shipment = em.createNamedQuery("Shipment.findByShipmentId", Shipment.class).setParameter("shipmentIdString", shipment_id).getSingleResult();
 
+        CustomsCase customsCase = em.createNamedQuery("CustomsCase.findByShipment", CustomsCase.class).setParameter("shipment", shipment).getSingleResult();
+
+        if (!customsCase.getCustomStatus().getStatus().equals("APPROVED")) {
+            return gson.toJson(Map.of(
+                    "status", false,
+                    "message", "Customs Case is not approved yet"
+            ));
+        }
+
         ShipmentProgress shipmentProgress = new ShipmentProgress();
         shipmentProgress.setShipStatus(shipStatus);
         shipmentProgress.setLocation(location);
