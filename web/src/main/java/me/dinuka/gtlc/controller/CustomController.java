@@ -24,6 +24,14 @@ public class CustomController {
         return customService.getAllCases(authHeader);
     }
 
+    @GET
+    @RolesAllowed({SecurityConstants.ROLE_ADMIN, SecurityConstants.ROLE_CUSTOMER})
+    @Path("/getDocuments/{cid}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response tracking(@HeaderParam("Authorization") String authHeader, @PathParam("cid") String caseId) {
+        return customService.getDocuments(authHeader, caseId);
+    }
+
     @POST
     @RolesAllowed(SecurityConstants.ROLE_ADMIN)
     @Path("/submitDocuments")
