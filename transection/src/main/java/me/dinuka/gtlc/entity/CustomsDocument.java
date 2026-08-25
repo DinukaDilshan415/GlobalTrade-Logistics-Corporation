@@ -5,6 +5,11 @@ import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "customs_documents")
+@NamedQueries({
+        @NamedQuery(name = "CustomsDocument.findAll", query = "SELECT c FROM CustomsDocument c")
+        , @NamedQuery(name = "CustomsDocument.findById", query = "SELECT c FROM CustomsDocument c WHERE c.id = :id")
+        , @NamedQuery(name = "CustomsDocument.findByCustomsCase", query = "SELECT c FROM CustomsDocument c WHERE c.customsCase = :customsCase")
+})
 public class CustomsDocument {
 
     @Id

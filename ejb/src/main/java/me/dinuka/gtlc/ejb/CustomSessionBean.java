@@ -171,4 +171,20 @@ public class CustomSessionBean {
 
         return "success";
     }
+
+    public String getCaseDocuments(String caseId){
+        CustomsCase customsCase = em.createNamedQuery("CustomsCase.findById", CustomsCase.class)
+                .setParameter("id", Integer.valueOf(caseId))
+                .getSingleResult();
+
+        HashMap<String, String> caseDocuments = new HashMap<>();
+        caseDocuments.put("commercialInvoice",  "/custom-document/"+caseId+"/"+customsCase.getCaseNumber() + "-commercialInvoice.pdf");
+        caseDocuments.put("certOfOrigin", "/custom-document/"+caseId+"/"+customsCase.getCaseNumber() + "-certOfOrigin.pdf");
+        caseDocuments.put("permit", "/custom-document/"+caseId+"/"+customsCase.getCaseNumber() + "-permit.pdf");
+        caseDocuments.put("insuranceCert", "/custom-document/"+caseId+"/"+customsCase.getCaseNumber() + "-insuranceCert.pdf");
+        caseDocuments.put("customsDeclaration", "/custom-document/"+caseId+"/"+customsCase.getCaseNumber() + "-customsDeclaration.pdf");
+        caseDocuments.put("otherDocs", "/custom-document/"+caseId+"/"+customsCase.getCaseNumber() + "-otherDocs.pdf");
+
+        return gson.toJson(caseDocuments);
+    }
 }
