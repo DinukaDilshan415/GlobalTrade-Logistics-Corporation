@@ -4,11 +4,10 @@ import com.google.gson.Gson;
 import jakarta.ejb.Stateless;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
-import me.dinuka.gtlc.entity.Country;
-import me.dinuka.gtlc.entity.Inventory;
-import me.dinuka.gtlc.entity.Warehouse;
+import me.dinuka.gtlc.entity.*;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -63,6 +62,74 @@ public class GetSessionBean {
 
             return gson.toJson(inventoryMap);
         }
+    }
+
+    public String userReferenceData(){
+        List<Country> countries = em.createNamedQuery("Country.findAll", Country.class).getResultList();
+
+        List<UserStatus> statusList = em.createNamedQuery("UserStatus.findAll", UserStatus.class).getResultList();
+
+        ArrayList<String> statuses = new ArrayList<>();
+
+        for(UserStatus status : statusList){
+            statuses.add(status.getStatus());
+        }
+
+        List<Roles> rolesList = em.createNamedQuery("Roles.findAll", Roles.class).getResultList();
+
+        ArrayList<HashMap<String, Object>> roleList = new ArrayList<>();
+
+        for(Roles role : rolesList){
+            HashMap<String, Object> map = new HashMap<>();
+            map.put("id", role.getId());
+            map.put("name", role.getRole());
+            if(role.getRole().equals("logistics coordinator")){
+                map.put("fields", List.of(
+                        Map.of(
+                                "name", "country",
+                                "label", "Operating Region",
+                                "type", "country_select"
+                        )
+                ));
+            } else if(role.getRole().equals("customs agent")){
+                map.put("fields", List.of(
+                        Map.of(
+                                "name", "position",
+                                "label", "Position / Title",
+                                "type", "text"
+                        ),
+                        Map.of(
+                                "name", "reg_number",
+                                "label", "Registration Number",
+                                "type", "text"
+                        ),
+                        Map.of(
+                                "name", "country",
+                                "label", "Assigned Country",
+                                "type", "country_select"
+                        )
+                ));
+            } else if(role.getRole().equals("vendor manager")){
+                map.put("fields", List.of(
+                        Map.of(
+                                "name", "country",
+                                "label", "Managed Region",
+                                "type", "country_select"
+                        ))
+                );
+            } else {
+                map.put("fields", List.of());
+            }
+            roleList.add(map);
+        }
+
+        HashMap<String, Object> userReferenceData = new HashMap<>();
+
+        userReferenceData.put("countries", countries);
+        userReferenceData.put("statuses", statuses);
+        userReferenceData.put("roles", roleList);
+
+        return gson.toJson(userReferenceData);
     }
 
 }

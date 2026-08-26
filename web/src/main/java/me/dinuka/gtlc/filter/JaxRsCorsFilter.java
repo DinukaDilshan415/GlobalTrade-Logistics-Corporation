@@ -8,8 +8,8 @@ import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.ext.Provider;
 import java.io.IOException;
 
-@Provider
-@PreMatching
+//@Provider
+//@PreMatching
 public class JaxRsCorsFilter implements ContainerResponseFilter {
 
     @Override

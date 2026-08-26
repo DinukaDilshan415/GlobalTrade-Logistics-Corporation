@@ -48,4 +48,12 @@ public class GetService {
                     .build();
         }
     }
+
+    public Response userReferenceData(){
+        String data = getSessionBean.userReferenceData();
+
+        return Response.status(Response.Status.OK)
+                .entity(data)
+                .build();
+    }
 }
