@@ -260,4 +260,37 @@ public class CustomSessionBean {
                 "message", "Case Status Updated Successfully"
         ));
     }
+
+    public String updateCaseDecision(String email, Map<String, String> body){
+        String caseId = (String) body.get("caseId");
+        String customsValue = (String) body.get("customsValue");
+        String dutyAmount = (String) body.get("dutyAmount");
+        String riskLevel = (String) body.get("riskLevel");
+        String remarks = (String) body.get("remarks");
+        String status = (String) body.get("status");
+
+        User user = em.createNamedQuery("User.findByEmail", User.class).setParameter("email", email).getSingleResult();
+
+        CustomAgent customAgent = em.createNamedQuery("CustomAgent.findByUser", CustomAgent.class).setParameter("user", user).getSingleResult();
+
+        CustomStatus customStatus = em.createNamedQuery("CustomStatus.findByStatus", CustomStatus.class).setParameter("status", status).getSingleResult();
+
+        CustomsCase customsCase = em.createNamedQuery("CustomsCase.findById", CustomsCase.class)
+                .setParameter("id", Integer.valueOf(caseId))
+                .getSingleResult();
+        
+        customsCase.setCustomsValue(Double.parseDouble(customsValue));
+        customsCase.setEstimatedDuty(Double.parseDouble(dutyAmount));
+        customsCase.setRiskLevel(riskLevel);
+        customsCase.setRemarks(remarks);
+        customsCase.setCustomStatus(customStatus);
+        customsCase.setResponseAt(java.time.LocalDateTime.now());
+        customsCase.setCustomAgent(customAgent);
+        em.merge(customsCase);
+
+        return gson.toJson(Map.of(
+                "status", true,
+                "message", "Case Decision Updated Successfully"
+        ));
+    }
 }

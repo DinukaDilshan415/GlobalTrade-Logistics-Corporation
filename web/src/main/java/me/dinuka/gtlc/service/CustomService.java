@@ -174,4 +174,30 @@ public class CustomService {
             ).build();
         }
     }
+
+    public Response updateCaseDecision(String authHeader, Map<String, String> body){
+        if (authHeader != null && authHeader.startsWith("Bearer ")) {
+            String token = authHeader.substring(7);
+            if (JwtUtil.isValid(token)) {
+                DecodedJWT jwt = JwtUtil.parseToken(token);
+                String username = jwt.getSubject();
+
+                String updated = customSessionBean.updateCaseDecision(username, body);
+
+                return Response.status(Response.Status.OK)
+                        .entity(updated)
+                        .build();
+            } else {
+                System.out.println("Invalid or expired token:");
+                return Response.status(Response.Status.UNAUTHORIZED).entity(
+                        Map.of("message", "Invalid or expired token")
+                ).build();
+            }
+        } else {
+            System.out.println("Authorization header is missing:");
+            return Response.status(Response.Status.UNAUTHORIZED).entity(
+                    Map.of("message", "Authorization header is missing")
+            ).build();
+        }
+    }
 }

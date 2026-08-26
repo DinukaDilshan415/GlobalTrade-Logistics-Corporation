@@ -52,6 +52,14 @@ public class CustomController {
     }
 
     @POST
+    @RolesAllowed({SecurityConstants.CUSTOMS_AGENT})
+    @Path("/updateCaseDecision")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response updateCaseDecision(@HeaderParam("Authorization") String authHeader, Map<String, String> body) {
+        return customService.updateCaseDecision(authHeader, body);
+    }
+
+    @POST
     @RolesAllowed(SecurityConstants.ROLE_ADMIN)
     @Path("/submitDocuments")
     @Consumes(MediaType.MULTIPART_FORM_DATA)
