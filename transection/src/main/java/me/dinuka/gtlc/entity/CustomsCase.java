@@ -12,6 +12,8 @@ import java.util.List;
         , @NamedQuery(name = "CustomsCase.findById", query = "SELECT c FROM CustomsCase c WHERE c.id = :id")
         , @NamedQuery(name = "CustomsCase.findByCaseNumber", query = "SELECT c FROM CustomsCase c WHERE c.caseNumber = :caseNumber")
         , @NamedQuery(name = "CustomsCase.findByShipment", query = "SELECT c FROM CustomsCase c WHERE c.shipment = :shipment")
+        , @NamedQuery(name = "CustomsCase.findByShipments", query = "SELECT c FROM CustomsCase c WHERE c.shipment IN :shipments")
+
 })
 public class CustomsCase {
 

@@ -18,7 +18,7 @@ public class CustomDocumentController {
     private CustomService customService;
 
     @GET
-    @RolesAllowed({SecurityConstants.ROLE_ADMIN, SecurityConstants.ROLE_CUSTOMER})
+    @RolesAllowed({SecurityConstants.ROLE_ADMIN, SecurityConstants.CUSTOMS_AGENT})
     @Path("/{caseId}/{fileName}")
     @Produces(MediaType.APPLICATION_JSON)
     public Response viewDocument(

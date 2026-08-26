@@ -10,6 +10,8 @@ import me.dinuka.gtlc.dto.CustomDocDTO;
 import me.dinuka.gtlc.security.SecurityConstants;
 import me.dinuka.gtlc.service.CustomService;
 
+import java.util.Map;
+
 @Path("/custom")
 public class CustomController {
 
@@ -25,11 +27,28 @@ public class CustomController {
     }
 
     @GET
-    @RolesAllowed({SecurityConstants.ROLE_ADMIN, SecurityConstants.ROLE_CUSTOMER})
+    @RolesAllowed(SecurityConstants.CUSTOMS_AGENT)
+    @Path("/getReviewCases")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getReviewCases(@HeaderParam("Authorization") String authHeader) {
+        return customService.getReviewCases(authHeader);
+    }
+
+
+    @GET
+    @RolesAllowed({SecurityConstants.ROLE_ADMIN, SecurityConstants.CUSTOMS_AGENT})
     @Path("/getDocuments/{cid}")
     @Produces(MediaType.APPLICATION_JSON)
     public Response tracking(@HeaderParam("Authorization") String authHeader, @PathParam("cid") String caseId) {
         return customService.getDocuments(authHeader, caseId);
+    }
+
+    @PUT
+    @RolesAllowed({SecurityConstants.ROLE_ADMIN, SecurityConstants.CUSTOMS_AGENT})
+    @Path("/updateCaseStatus")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response updateCaseStatus(@HeaderParam("Authorization") String authHeader, Map<String, String> body) {
+        return customService.updateCaseStatus(authHeader, body);
     }
 
     @POST
