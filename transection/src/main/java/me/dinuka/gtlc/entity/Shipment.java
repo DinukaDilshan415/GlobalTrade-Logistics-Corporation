@@ -10,6 +10,7 @@ import java.util.List;
         @NamedQuery(name = "Shipment.findAll", query = "SELECT s FROM Shipment s")
         ,@NamedQuery(name = "Shipment.findAllLatestFirst", query = "SELECT s FROM Shipment s ORDER BY s.createdAt DESC")
         , @NamedQuery(name = "Shipment.findByShipmentId", query = "SELECT s FROM Shipment s WHERE s.shipmentIdString = :shipmentIdString")
+        , @NamedQuery(name = "Shipment.findByOriginCountry", query = "SELECT s FROM Shipment s WHERE s.originCountry = :originCountry")
 })
 public class Shipment {
 

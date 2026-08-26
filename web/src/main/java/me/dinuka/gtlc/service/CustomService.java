@@ -119,4 +119,59 @@ public class CustomService {
 
         return file;
     }
+
+    public Response getReviewCases(String authHeader){
+        if (authHeader != null && authHeader.startsWith("Bearer ")) {
+            String token = authHeader.substring(7);
+            if (JwtUtil.isValid(token)) {
+                DecodedJWT jwt = JwtUtil.parseToken(token);
+                String username = jwt.getSubject();
+
+                String reviewCases = customSessionBean.getReviewCases(username);
+
+                return Response.status(Response.Status.OK)
+                        .entity(reviewCases)
+                        .build();
+            } else {
+                System.out.println("Invalid or expired token:");
+                return Response.status(Response.Status.UNAUTHORIZED).entity(
+                        Map.of("message", "Invalid or expired token")
+                ).build();
+            }
+        } else {
+            System.out.println("Authorization header is missing:");
+            return Response.status(Response.Status.UNAUTHORIZED).entity(
+                    Map.of("message", "Authorization header is missing")
+            ).build();
+        }
+    }
+
+    public Response updateCaseStatus(String authHeader, Map<String, String> body){
+        if (authHeader != null && authHeader.startsWith("Bearer ")) {
+            String token = authHeader.substring(7);
+            if (JwtUtil.isValid(token)) {
+                DecodedJWT jwt = JwtUtil.parseToken(token);
+                String username = jwt.getSubject();
+
+                String caseId = body.get("caseId");
+                String status = body.get("newStatus");
+
+                String updated = customSessionBean.updateCaseStatus(caseId, status);
+
+                return Response.status(Response.Status.OK)
+                        .entity(updated)
+                        .build();
+            } else {
+                System.out.println("Invalid or expired token:");
+                return Response.status(Response.Status.UNAUTHORIZED).entity(
+                        Map.of("message", "Invalid or expired token")
+                ).build();
+            }
+        } else {
+            System.out.println("Authorization header is missing:");
+            return Response.status(Response.Status.UNAUTHORIZED).entity(
+                    Map.of("message", "Authorization header is missing")
+            ).build();
+        }
+    }
 }
