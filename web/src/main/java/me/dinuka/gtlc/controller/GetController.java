@@ -33,4 +33,11 @@ public class GetController {
     public Response warehouseProducts(@PathParam("warehouseId") String warehouseId){
         return getService.warehouseProducts(warehouseId);
     }
+
+    @GET
+    @Path("/userReferenceData")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response userReferenceData(){
+        return getService.userReferenceData();
+    }
 }

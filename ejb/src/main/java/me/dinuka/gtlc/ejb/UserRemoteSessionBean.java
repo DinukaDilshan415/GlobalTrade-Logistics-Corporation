@@ -11,6 +11,8 @@ import me.dinuka.gtlc.entity.User;
 import me.dinuka.gtlc.remote.UserRemoteService;
 import org.mindrot.jbcrypt.BCrypt;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 @Stateless
@@ -44,5 +46,21 @@ public class UserRemoteSessionBean implements UserRemoteService {
             em.persist(user);
             return "success";
         }
+    }
+
+    @Override
+    public String getAllUsers(){
+        List<User> userList = em.createNamedQuery("User.findAll", User.class).getResultList();
+
+        ArrayList<HashMap<String, Object>> userMapList = new ArrayList<>();
+        for(User user : userList){
+            HashMap<String, Object> userMap = new HashMap<>();
+            userMap.put("id", user.getId());
+            userMap.put("username", user.getUsername());
+            userMapList.add(userMap);
+        }
+
+        Gson gson = new Gson();
+        return gson.toJson(userMapList);
     }
 }

@@ -1,10 +1,18 @@
 package me.dinuka.gtlc.entity;
 
 import jakarta.persistence.*;
+
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Entity
 @Table(name = "custom_agent")
+@NamedQueries({
+        @NamedQuery(name = "CustomAgent.findAll", query = "SELECT c FROM CustomAgent c")
+        , @NamedQuery(name = "CustomAgent.findById", query = "SELECT c FROM CustomAgent c WHERE c.id = :id")
+        , @NamedQuery(name = "CustomAgent.findByCountry", query = "SELECT c FROM CustomAgent c WHERE c.country = :country")
+        , @NamedQuery(name = "CustomAgent.findByUser", query = "SELECT c FROM CustomAgent c WHERE c.user = :user")
+})
 public class CustomAgent {
 
     @Id
@@ -20,11 +28,23 @@ public class CustomAgent {
     @Column(name = "reg_number", length = 45)
     private String regNumber;
 
-    @Column(name = "country_id", nullable = false)
-    private Integer countryId;
+    @Column(name = "created_at", nullable = false)
+    private LocalDateTime createdAt;
 
-    @Column(name = "user_id", nullable = false)
-    private Integer userId;
+    @Column(name = "updated_at")
+    private LocalDateTime updatedAt;
+
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "user_status_id", nullable = false)
+    private UserStatus userStatus;
+
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "country_id", nullable = false)
+    private Country country;
+
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
 
     @OneToMany(mappedBy = "customAgent", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     private List<CustomsCase> customsCases;
@@ -43,13 +63,47 @@ public class CustomAgent {
     public String getRegNumber() { return regNumber; }
     public void setRegNumber(String regNumber) { this.regNumber = regNumber; }
 
-    public Integer getCountryId() { return countryId; }
-    public void setCountryId(Integer countryId) { this.countryId = countryId; }
-
-    public Integer getUserId() { return userId; }
-    public void setUserId(Integer userId) { this.userId = userId; }
-
     public List<CustomsCase> getCustomsCases() { return customsCases; }
     public void setCustomsCases(List<CustomsCase> customsCases) { this.customsCases = customsCases; }
+
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    public LocalDateTime getUpdatedAt() {
+        return updatedAt;
+    }
+
+    public void setUpdatedAt(LocalDateTime updatedAt) {
+        this.updatedAt = updatedAt;
+    }
+
+    public UserStatus getUserStatus() {
+        return userStatus;
+    }
+
+    public void setUserStatus(UserStatus userStatus) {
+        this.userStatus = userStatus;
+    }
+
+    public Country getCountry() {
+        return country;
+    }
+
+    public void setCountry(Country country) {
+        this.country = country;
+    }
+
+    public User getUser() {
+        return user;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
+    }
 }
 
