@@ -1,9 +1,11 @@
 package me.dinuka.gtlc;
 
+import me.dinuka.gtlc.enums.AlertStatus;
 import org.mindrot.jbcrypt.BCrypt;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.concurrent.ThreadLocalRandom;
 
 public class Test {
     public static void main(String[] args) {
@@ -22,5 +24,11 @@ public class Test {
 
         // Output the result
         System.out.println(caseNumber);
+
+        System.out.println(AlertStatus.ACKNOWLEDGED);
+
+        int number = ThreadLocalRandom.current().nextInt(1000000);
+        String result = String.format("ALT-%06d", number);
+        System.out.println(result);
     }
 }
