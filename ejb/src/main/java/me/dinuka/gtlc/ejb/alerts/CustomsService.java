@@ -35,7 +35,9 @@ public class CustomsService {
         alertService.createAlert(
                 AlertType.CUSTOMS_DEADLINE,
                 AlertSeverity.NOTICE,
-                "Customs case "+customsCase.getCaseNumber()+" requires attention. Deadline is "+customsCase.getDeadline().toString(),
+                "Customs case "+customsCase.getCaseNumber()+" requires attention. Deadline is "+customsCase.getDeadline()
+                        .format(java.time.format.DateTimeFormatter
+                        .ofPattern("MMM dd, yyyy HH:mm:ss", java.util.Locale.ENGLISH)),
                 "CUSTOMS",
                 customsCase.getCaseNumber()
         );

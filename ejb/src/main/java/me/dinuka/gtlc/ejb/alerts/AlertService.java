@@ -1,5 +1,6 @@
 package me.dinuka.gtlc.ejb.alerts;
 
+import com.google.gson.Gson;
 import jakarta.ejb.Stateless;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
@@ -9,13 +10,18 @@ import me.dinuka.gtlc.enums.AlertStatus;
 import me.dinuka.gtlc.enums.AlertType;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ThreadLocalRandom;
 
 @Stateless
 public class AlertService {
     @PersistenceContext(unitName = "gtlcPU")
     private EntityManager em;
+
+    Gson gson = new Gson();
 
     public Alert createAlert(
             AlertType type,
@@ -29,7 +35,7 @@ public class AlertService {
                 .setParameter("entityId", entityId)
                 .getResultList();
 
-        if(alertList.isEmpty()){
+        if (alertList.isEmpty()) {
             Alert alert = new Alert();
 
             int number = ThreadLocalRandom.current().nextInt(1000000);
@@ -47,7 +53,7 @@ public class AlertService {
 
             em.persist(alert);
 
-            System.out.println("Alert created: " + alert.getAlertNumber() + " | "+ alert.getMessage()+" | "+alert.getEntityId());
+            System.out.println("Alert created: " + alert.getAlertNumber() + " | " + alert.getMessage() + " | " + alert.getEntityId());
 
             return alert;
         } else {
@@ -55,4 +61,52 @@ public class AlertService {
             return alertList.get(0);
         }
     }
+
+    public String getAllAlerts() {
+        List<Alert> alertList = em.createNamedQuery("Alert.findAll", Alert.class).getResultList();
+
+        ArrayList<Map<String, String>> alerts = new ArrayList<>();
+        for (Alert alert : alertList) {
+            HashMap<String, String> alertMap = new HashMap<>();
+            alertMap.put("id", alert.getAlertNumber());
+            alertMap.put("type", alert.getType());
+            alertMap.put("severity", alert.getSeverity());
+            alertMap.put("message", alert.getMessage());
+            alertMap.put("relatedEntity", alert.getEntityId());
+            alertMap.put("status", alert.getStatus());
+            alertMap.put("datetime", alert.getCreatedAt().format(java.time.format.DateTimeFormatter
+                    .ofPattern("MMM dd, yyyy HH:mm:ss", java.util.Locale.ENGLISH)));
+            alerts.add(alertMap);
+        }
+
+        return gson.toJson(Map.of(
+                "status", true,
+                "data", alerts
+        ));
+    }
+
+    public String updateAlertStatus(String alertNumber, String status) {
+
+        if (status.equals("ACKNOWLEDGED")) {
+            Alert alert = em.createNamedQuery("Alert.findByAlertNumber", Alert.class)
+                    .setParameter("alertNumber", alertNumber)
+                    .getSingleResult();
+
+            alert.setStatus(AlertStatus.ACKNOWLEDGED.name());
+            alert.setReadAt(LocalDateTime.now());
+            em.merge(alert);
+
+            return gson.toJson(Map.of(
+                    "status", true,
+                    "message", "Alert status updated successfully"
+            ));
+        } else {
+            return gson.toJson(Map.of(
+                    "status", false,
+                    "message", "Invalid status"
+            ));
+        }
+    }
 }
+
+
