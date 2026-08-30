@@ -2,6 +2,8 @@ package me.dinuka.gtlc.ejb;
 
 import com.google.gson.Gson;
 import jakarta.ejb.Stateless;
+import jakarta.ejb.TransactionAttribute;
+import jakarta.ejb.TransactionAttributeType;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.NoResultException;
 import jakarta.persistence.PersistenceContext;
@@ -21,6 +23,7 @@ public class ShipmentSessionBean {
 
     Gson gson = new Gson();
 
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public String getShipmentTracking(String shipment_id) {
         try {
             Shipment shipment = em.createNamedQuery("Shipment.findByShipmentId", Shipment.class)

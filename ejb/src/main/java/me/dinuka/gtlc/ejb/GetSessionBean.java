@@ -2,6 +2,8 @@ package me.dinuka.gtlc.ejb;
 
 import com.google.gson.Gson;
 import jakarta.ejb.Stateless;
+import jakarta.ejb.TransactionAttribute;
+import jakarta.ejb.TransactionAttributeType;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import me.dinuka.gtlc.annotation.PerformanceMonitored;
@@ -20,10 +22,12 @@ public class GetSessionBean {
     @PersistenceContext(unitName = "gtlcPU")
     private EntityManager em;
 
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public List<Country> getCountries(){
         return em.createNamedQuery("Country.findAll", Country.class).getResultList();
     }
 
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public String getCountriesWithWarehouses(){
         List<Country> countries = em.createNamedQuery("Country.findAll", Country.class).getResultList();
 
@@ -37,6 +41,7 @@ public class GetSessionBean {
                 "warehouses", warehouses));
     }
 
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public String getWarehouseProducts(String warehouseId){
         Warehouse warehouse = em.createNamedQuery("Warehouse.findById", Warehouse.class)
                 .setParameter("id", warehouseId)
