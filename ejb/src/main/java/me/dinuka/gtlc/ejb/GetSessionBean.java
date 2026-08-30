@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import jakarta.ejb.Stateless;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
+import me.dinuka.gtlc.annotation.PerformanceMonitored;
 import me.dinuka.gtlc.entity.*;
 
 import java.util.ArrayList;
@@ -12,6 +13,7 @@ import java.util.List;
 import java.util.Map;
 
 @Stateless
+@PerformanceMonitored
 public class GetSessionBean {
     Gson gson = new Gson();
 

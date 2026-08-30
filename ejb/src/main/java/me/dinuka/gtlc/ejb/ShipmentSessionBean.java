@@ -5,6 +5,7 @@ import jakarta.ejb.Stateless;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.NoResultException;
 import jakarta.persistence.PersistenceContext;
+import me.dinuka.gtlc.annotation.PerformanceMonitored;
 import me.dinuka.gtlc.entity.*;
 
 import java.time.LocalDate;
@@ -13,6 +14,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 @Stateless
+@PerformanceMonitored
 public class ShipmentSessionBean {
     @PersistenceContext(unitName = "gtlcPU")
     private EntityManager em;
@@ -59,7 +61,7 @@ public class ShipmentSessionBean {
                 shipmentProgressMap.put("description", shipmentProgress.getDescription());
                 shipmentProgressMap.put("datetime", shipmentProgress.getCreatedAt()
                         .format(java.time.format.DateTimeFormatter
-                                .ofPattern("MMM dd, yyyy HH:mm: a", java.util.Locale.ENGLISH)));
+                                .ofPattern("MMM dd, yyyy HH:mm a", java.util.Locale.ENGLISH)));
                 shipmentProgressesList.add(shipmentProgressMap);
             }
 
@@ -178,7 +180,7 @@ public class ShipmentSessionBean {
                     shipment.setSenderPhone(vendorShipment.getSenderPhone());
                     shipment.setDestAddress(vendorShipment.getDestAddress());
                     shipment.setRecipientName(vendorShipment.getRecipientName());
-                    shipment.setRecipientPhone(vendorShipment.getSenderPhone());
+                    shipment.setRecipientPhone(vendorShipment.getRecipientPhone());
                     shipment.setCreatedAt(java.time.LocalDateTime.now());
                     shipment.setUpdatedAt(java.time.LocalDateTime.now());
                     shipment.setOriginCountry(vendorShipment.getOriginCountry());
