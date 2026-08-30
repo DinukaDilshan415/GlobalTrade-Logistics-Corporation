@@ -1,5 +1,7 @@
 package me.dinuka.gtlc.ejb;
 
+import jakarta.ejb.TransactionAttribute;
+import jakarta.ejb.TransactionAttributeType;
 import jakarta.enterprise.context.ApplicationScoped;
 
 import java.io.IOException;
@@ -17,11 +19,13 @@ public class MonitoringFileService {
     private static final String BASE_DIRECTORY =
             "C:/GlobalTrade/monitoring/";
 
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public void writeSystemData(String data) {
 
         writeToFile("system", data);
     }
 
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public void writePerformanceData(String data) {
 
         writeToFile("performance", data);
@@ -32,6 +36,7 @@ public class MonitoringFileService {
         writeToFile("errors", data);
     }
 
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public List<String> readSystemData(LocalDate date) throws IOException {
         return readSystemData("system", date);
     }

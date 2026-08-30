@@ -2,6 +2,8 @@ package me.dinuka.gtlc.ejb;
 
 import com.google.gson.Gson;
 import jakarta.ejb.Stateless;
+import jakarta.ejb.TransactionAttribute;
+import jakarta.ejb.TransactionAttributeType;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import me.dinuka.gtlc.dto.InventoryDTO;
@@ -19,7 +21,8 @@ public class InventorySessionBean {
     private EntityManager em;
 
     Gson gson = new Gson();
-    
+
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public String getAllInventory(){
         List<Inventory> inventoryList = em.createNamedQuery("Inventory.findAll", Inventory.class).getResultList();
 
