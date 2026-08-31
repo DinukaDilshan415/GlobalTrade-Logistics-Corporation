@@ -5,21 +5,27 @@ import com.google.gson.JsonObject;
 import jakarta.ejb.Stateless;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
+import me.dinuka.gtlc.annotation.Logged;
 import me.dinuka.gtlc.dto.UserDTO;
 import me.dinuka.gtlc.entity.AccountType;
 import me.dinuka.gtlc.entity.User;
+import me.dinuka.gtlc.log.ApplicationLogger;
 import me.dinuka.gtlc.remote.UserRemoteService;
 import org.mindrot.jbcrypt.BCrypt;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.logging.Logger;
 
+@Logged
 @Stateless
 public class UserRemoteSessionBean implements UserRemoteService {
 
     @PersistenceContext(unitName = "gtlcPU")
     private EntityManager em;
+
+    private static final Logger LOGGER = ApplicationLogger.getLogger();
 
     @Override
     public String register(UserDTO userDTO) {
@@ -29,6 +35,7 @@ public class UserRemoteSessionBean implements UserRemoteService {
                 .getResultList();
 
         if(!userList.isEmpty()){
+            LOGGER.warning("Email already exists"+" "+userDTO.getEmail());
             return "Email already exists";
         } else {
             AccountType type = em.createNamedQuery("AccountType.findByType", AccountType.class)
@@ -44,6 +51,7 @@ public class UserRemoteSessionBean implements UserRemoteService {
             user.setAccountType(type);
 
             em.persist(user);
+            LOGGER.info("User registered: " + user.getUsername());
             return "success";
         }
     }
