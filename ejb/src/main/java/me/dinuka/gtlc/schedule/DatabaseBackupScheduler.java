@@ -4,6 +4,7 @@ import jakarta.ejb.Schedule;
 import jakarta.ejb.Singleton;
 import jakarta.ejb.Startup;
 import me.dinuka.gtlc.annotation.Logged;
+import me.dinuka.gtlc.annotation.MonitorTimeout;
 import me.dinuka.gtlc.log.ApplicationLogger;
 
 import java.util.logging.Level;
@@ -19,6 +20,7 @@ public class DatabaseBackupScheduler {
     private final DatabaseBackupService backupService =
             new DatabaseBackupService();
 
+    @MonitorTimeout
     @Schedule(
             hour = "23",
             minute = "30",

@@ -4,6 +4,7 @@ import jakarta.ejb.EJB;
 import jakarta.ejb.Schedule;
 import jakarta.ejb.Singleton;
 import jakarta.ejb.Startup;
+import me.dinuka.gtlc.annotation.MonitorTimeout;
 import me.dinuka.gtlc.ejb.alerts.CustomsService;
 import me.dinuka.gtlc.ejb.alerts.InventoryService;
 import me.dinuka.gtlc.ejb.alerts.ShipmentService;
@@ -21,6 +22,7 @@ public class SupplyChainAlertTimer {
     @EJB
     private CustomsService customsService;
 
+    @MonitorTimeout
     @Schedule(
             hour = "*",
             minute = "*/30",
