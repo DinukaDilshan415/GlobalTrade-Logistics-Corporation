@@ -3,6 +3,7 @@ package me.dinuka.gtlc.ejb;
 import jakarta.ejb.TransactionAttribute;
 import jakarta.ejb.TransactionAttributeType;
 import jakarta.enterprise.context.ApplicationScoped;
+import me.dinuka.gtlc.exception.MonitoringFileException;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -70,8 +71,8 @@ public class MonitoringFileService {
             );
 
         } catch (IOException e) {
-
             e.printStackTrace();
+            throw new MonitoringFileException(e.getMessage());
         }
     }
 
