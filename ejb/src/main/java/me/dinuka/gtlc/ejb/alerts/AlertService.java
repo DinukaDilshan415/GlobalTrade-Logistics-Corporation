@@ -4,10 +4,12 @@ import com.google.gson.Gson;
 import jakarta.ejb.Stateless;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
+import me.dinuka.gtlc.annotation.Logged;
 import me.dinuka.gtlc.entity.Alert;
 import me.dinuka.gtlc.enums.AlertSeverity;
 import me.dinuka.gtlc.enums.AlertStatus;
 import me.dinuka.gtlc.enums.AlertType;
+import me.dinuka.gtlc.log.ApplicationLogger;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -15,11 +17,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.logging.Logger;
 
 @Stateless
 public class AlertService {
     @PersistenceContext(unitName = "gtlcPU")
     private EntityManager em;
+
+    private static final Logger LOGGER = ApplicationLogger.getLogger();
 
     Gson gson = new Gson();
 
@@ -85,6 +90,7 @@ public class AlertService {
         ));
     }
 
+    @Logged
     public String updateAlertStatus(String alertNumber, String status) {
 
         if (status.equals("ACKNOWLEDGED")) {
@@ -96,6 +102,7 @@ public class AlertService {
             alert.setReadAt(LocalDateTime.now());
             em.merge(alert);
 
+            LOGGER.info("Alert status updated: " + alert.getAlertNumber() + " | " + alert.getStatus());
             return gson.toJson(Map.of(
                     "status", true,
                     "message", "Alert status updated successfully"

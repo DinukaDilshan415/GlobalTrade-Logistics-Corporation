@@ -6,18 +6,23 @@ import jakarta.ejb.TransactionAttribute;
 import jakarta.ejb.TransactionAttributeType;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
+import me.dinuka.gtlc.annotation.Logged;
 import me.dinuka.gtlc.annotation.PerformanceMonitored;
 import me.dinuka.gtlc.entity.*;
+import me.dinuka.gtlc.log.ApplicationLogger;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Logger;
 
 @Stateless
 @PerformanceMonitored
 public class GetSessionBean {
     Gson gson = new Gson();
+
+    private static final Logger LOGGER = ApplicationLogger.getLogger();
 
     @PersistenceContext(unitName = "gtlcPU")
     private EntityManager em;
@@ -35,6 +40,7 @@ public class GetSessionBean {
 
         List<Warehouse> warehouses = em.createNamedQuery("Warehouse.findAll", Warehouse.class).getResultList();
 
+        LOGGER.info("Getting all countries with warehouses");
         return gson.toJson(Map.of(
                 "countries", countries,
                 "warehouseCountries", countryList,

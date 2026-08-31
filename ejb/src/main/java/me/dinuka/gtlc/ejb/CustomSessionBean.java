@@ -6,8 +6,10 @@ import jakarta.ejb.Stateless;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.ws.rs.core.EntityPart;
+import me.dinuka.gtlc.annotation.Logged;
 import me.dinuka.gtlc.dto.CustomDocDTO;
 import me.dinuka.gtlc.entity.*;
+import me.dinuka.gtlc.log.ApplicationLogger;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -20,11 +22,15 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Logger;
 
+@Logged
 @Stateless
 public class CustomSessionBean {
     @PersistenceContext(unitName = "gtlcPU")
     private EntityManager em;
+
+    private static final Logger LOGGER = ApplicationLogger.getLogger();
 
     Gson gson = new Gson();
 
@@ -87,11 +93,13 @@ public class CustomSessionBean {
             String saved = saveCaseFiles(caseId, caseNumber, commercialInvoice, certOfOrigin, permit, insuranceCert, customsDeclaration, otherDocs);
 
             if (saved.equals("success")) {
+                LOGGER.info("Documents Uploaded Successfully | Case ID: "+caseId);
                 return gson.toJson(Map.of(
                         "status", true,
                         "message", "Documents Uploaded Successfully"
                 ));
             } else {
+                LOGGER.warning("Documents Upload Failed | Case ID: "+caseId+" | Error: "+saved);
                 return gson.toJson(Map.of(
                         "status", false,
                         "message", saved
@@ -256,6 +264,7 @@ public class CustomSessionBean {
         customsCase.setCustomStatus(customStatus);
         em.merge(customsCase);
 
+        LOGGER.info("Case Status Updated | Case ID: "+caseId+" | Status: "+status);
         return gson.toJson(Map.of(
                 "message", "Case Status Updated Successfully"
         ));
@@ -288,6 +297,7 @@ public class CustomSessionBean {
         customsCase.setCustomAgent(customAgent);
         em.merge(customsCase);
 
+        LOGGER.info("Case Decision Updated | Case ID: "+caseId+" | Status: "+status);
         return gson.toJson(Map.of(
                 "status", true,
                 "message", "Case Decision Updated Successfully"

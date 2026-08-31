@@ -6,16 +6,18 @@ import jakarta.ejb.Startup;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.transaction.Transactional;
+import me.dinuka.gtlc.annotation.Logged;
+import me.dinuka.gtlc.log.ApplicationLogger;
 
 import java.time.Instant;
 import java.util.logging.Logger;
 
+@Logged
 @Singleton
 @Startup
 public class RefreshTokenCleanupScheduler {
 
-    private static final Logger LOGGER =
-            Logger.getLogger(RefreshTokenCleanupScheduler.class.getName());
+    private static final Logger LOGGER = ApplicationLogger.getLogger();
 
     @PersistenceContext(unitName = "gtlcPU")
     private EntityManager em;

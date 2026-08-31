@@ -7,19 +7,25 @@ import jakarta.ejb.TransactionAttributeType;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.NoResultException;
 import jakarta.persistence.PersistenceContext;
+import me.dinuka.gtlc.annotation.Logged;
 import me.dinuka.gtlc.annotation.PerformanceMonitored;
 import me.dinuka.gtlc.entity.*;
+import me.dinuka.gtlc.log.ApplicationLogger;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.logging.Logger;
 
+@Logged
 @Stateless
 @PerformanceMonitored
 public class ShipmentSessionBean {
     @PersistenceContext(unitName = "gtlcPU")
     private EntityManager em;
+
+    private static final Logger LOGGER = ApplicationLogger.getLogger();
 
     Gson gson = new Gson();
 
@@ -245,8 +251,10 @@ public class ShipmentSessionBean {
                 }
 
             }
+            LOGGER.info("Shipment Updated: " + vendorShipment.getShipmentIdString());
             return "Shipment Updated";
         } else {
+            LOGGER.warning("Shipment is not in Pending Status: " + vendorShipment.getShipmentIdString());
             return "Shipment is not in Pending Status";
         }
     }
@@ -261,6 +269,7 @@ public class ShipmentSessionBean {
         CustomsCase customsCase = em.createNamedQuery("CustomsCase.findByShipment", CustomsCase.class).setParameter("shipment", shipment).getSingleResult();
 
         if (!customsCase.getCustomStatus().getStatus().equals("APPROVED")) {
+            LOGGER.warning("Customs Case is not approved yet: " + shipment_id);
             return gson.toJson(Map.of(
                     "status", false,
                     "message", "Customs Case is not approved yet"
@@ -276,6 +285,7 @@ public class ShipmentSessionBean {
 
         em.persist(shipmentProgress);
 
+        LOGGER.info("Shipment Progress Updated: " + shipment_id);
         return gson.toJson(Map.of(
                 "status", true,
                 "message", "Shipment Progress Updated"
@@ -348,6 +358,7 @@ public class ShipmentSessionBean {
             } else if (shipQuantityObj instanceof String) {
                 shipQuantity = Integer.parseInt((String) shipQuantityObj);
             } else {
+                LOGGER.warning("Invalid shipment quantity format: " + shipQuantityObj.getClass().getName());
                 return gson.toJson(Map.of(
                         "status", false,
                         "message", "Invalid shipment quantity format"
@@ -369,6 +380,7 @@ public class ShipmentSessionBean {
                 em.persist(shipmentItem);
 
             } else {
+                LOGGER.warning("Not enough " + inventory.getProductName() + " in stock: " + id);
                 return gson.toJson(Map.of(
                         "status", false,
                         "message", "Not enough " + inventory.getProductName() + " in stock"
@@ -401,12 +413,14 @@ public class ShipmentSessionBean {
             shipmentDetails.put("status", shipStatus.getName());
             shipmentDetails.put("products", new ArrayList<>());
 
+            LOGGER.info("Shipment Saved: " + shipment.getShipmentIdString());
             return gson.toJson(Map.of(
                     "status", true,
                     "message", "Shipment Saved",
                     "newShip", shipmentDetails
             ));
         } else {
+            LOGGER.severe("Failed to open custom case: " + shipment.getShipmentIdString());
             return gson.toJson(Map.of(
                     "status", false,
                     "message", "Failed to open custom case"
@@ -438,9 +452,11 @@ public class ShipmentSessionBean {
             customsCase.setCustomStatus(customStatus);
 
             em.persist(customsCase);
+            LOGGER.info("Custom Case Opened: " + caseNumber);
             return true;
         } catch (Exception e) {
             e.printStackTrace();
+            LOGGER.severe("Failed to open custom case: " + e);
             return false;
         }
     }

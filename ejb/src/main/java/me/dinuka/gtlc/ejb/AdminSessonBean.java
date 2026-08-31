@@ -4,12 +4,15 @@ import com.google.gson.Gson;
 import jakarta.ejb.Stateless;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
+import me.dinuka.gtlc.annotation.Logged;
 import me.dinuka.gtlc.entity.*;
+import me.dinuka.gtlc.log.ApplicationLogger;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Logger;
 
 @Stateless
 public class AdminSessonBean {
@@ -17,6 +20,9 @@ public class AdminSessonBean {
     @PersistenceContext(unitName = "gtlcPU")
     private EntityManager em;
 
+    private static final Logger LOGGER = ApplicationLogger.getLogger();
+
+    @Logged
     public String saveNewUser(Map<String, Object> userMap){
         Map<String, Object> roleDetails = (Map<String, Object>) userMap.get("roleDetails");
 
@@ -56,6 +62,7 @@ public class AdminSessonBean {
                 customAgent.setUpdatedAt(java.time.LocalDateTime.now());
                 em.persist(customAgent);
 
+                LOGGER.info("Customs Agent created: " + customAgent.getName()+" | "+customAgent.getPosition());
                 return gson.toJson(Map.of(
                         "status", true,
                         "message", "Customs Agent created"

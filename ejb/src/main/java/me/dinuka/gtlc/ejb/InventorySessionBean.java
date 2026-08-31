@@ -6,19 +6,25 @@ import jakarta.ejb.TransactionAttribute;
 import jakarta.ejb.TransactionAttributeType;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
+import me.dinuka.gtlc.annotation.Logged;
 import me.dinuka.gtlc.dto.InventoryDTO;
 import me.dinuka.gtlc.entity.Inventory;
 import me.dinuka.gtlc.entity.Warehouse;
+import me.dinuka.gtlc.log.ApplicationLogger;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.logging.Logger;
 
+@Logged
 @Stateless
 public class InventorySessionBean {
     @PersistenceContext(unitName = "gtlcPU")
     private EntityManager em;
+
+    private static final Logger LOGGER = ApplicationLogger.getLogger();
 
     Gson gson = new Gson();
 
@@ -91,6 +97,7 @@ public class InventorySessionBean {
             em.persist(newInventory);
         }
 
+        LOGGER.info("Inventory Added Successfully"+" | HS Code: "+hs_code+" | Quantity: "+quantity+" | Warehouse ID: "+warehouses_id);
         return gson.toJson(Map.of(
                 "status", true,
                 "message", "Inventory Added Successfully"

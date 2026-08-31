@@ -7,9 +7,11 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.NoResultException;
 import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.TypedQuery;
+import me.dinuka.gtlc.annotation.Logged;
 import me.dinuka.gtlc.dto.ProductDTO;
 import me.dinuka.gtlc.dto.vendorDTO;
 import me.dinuka.gtlc.entity.*;
+import me.dinuka.gtlc.log.ApplicationLogger;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -18,12 +20,16 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Logger;
 
+@Logged
 @Stateless
 public class VendorSessionBean {
 
     @PersistenceContext(unitName = "gtlcPU")
     private EntityManager em;
+
+    private static final Logger LOGGER = ApplicationLogger.getLogger();
 
     Gson gson = new Gson();
 
@@ -57,9 +63,11 @@ public class VendorSessionBean {
             jsonObject.addProperty("status", vendor.getVendorStatus().getStatus());
 
         } catch (NoResultException e) {
+            LOGGER.info("No Result Found: " + e.getMessage() + "");
             System.out.println("No Result Found: " + e.getMessage() + "");
             jsonObject.addProperty("hasAccount", false);
         } catch (Exception e) {
+            LOGGER.severe("Exception: " + e.getMessage() + "");
             e.printStackTrace();
         }
 
@@ -131,6 +139,7 @@ public class VendorSessionBean {
             List<Vendor> vendors = em.createNamedQuery("Vendor.findByUser", Vendor.class).setParameter("user", user).getResultList();
 
             if(!vendors.isEmpty()){
+                LOGGER.warning("Vendor account already exists"+" "+email);
                 return "Vendor account already exists";
             } else {
                 List<Vendor> resultList = em.createNamedQuery("Vendor.findByVendorId", Vendor.class)
@@ -138,6 +147,7 @@ public class VendorSessionBean {
                         .getResultList();
 
                 if(!resultList.isEmpty()){
+                    LOGGER.warning("Vendor ID already exists"+" "+dto.getVendorId());
                     return "Vendor ID already exists. Try Again";
                 } else {
                     VendorStatus vendorStatus = em.createNamedQuery("VendorStatus.findByStatusId", VendorStatus.class).setParameter("id", 1).getSingleResult();
@@ -159,7 +169,7 @@ public class VendorSessionBean {
                     vendor.setCreatedAt(java.time.LocalDateTime.now());
 
                     em.persist(vendor);
-
+                    LOGGER.info("Vendor Account Opened: " + dto.getCompanyName());
                     return "success";
                 }
             }
@@ -167,6 +177,7 @@ public class VendorSessionBean {
         } catch (NoResultException e) {
             return "User not found";
         } catch (Exception e) {
+            LOGGER.severe("Exception: " + e);
             throw new RuntimeException(e);
         }
     }
@@ -179,9 +190,10 @@ public class VendorSessionBean {
             vendor.setVendorStatus(vendorStatus);
             em.merge(vendor);
 
+            LOGGER.info("Vendor Status Updated: " + vendorId + " | " + status);
             return "Vender Status : " + status + " Updated";
-
         } catch (Exception e) {
+            LOGGER.severe("Exception: " + e);
             throw new RuntimeException(e);
         }
     }
@@ -196,6 +208,7 @@ public class VendorSessionBean {
                 .getSingleResult();
 
         if (!vendor.getVendorStatus().getStatus().equals("active")){
+            LOGGER.info("Vendor Account is under review. Please wait for approval"+" "+email+" "+vendor.getVendorIdString());
             return gson.toJson(Map.of(
                     "status", false,
                     "message", "Vendor Account is under review. Please wait for approval"
@@ -208,6 +221,7 @@ public class VendorSessionBean {
 
         List<VendorShipment> resultList = em.createNamedQuery("VendorShipment.findByShipmentIdString", VendorShipment.class).setParameter("shipmentIdString", shipmentId).getResultList();
         if(!resultList.isEmpty()){
+            LOGGER.warning("Shipment ID already exists"+" "+shipmentId);
             return gson.toJson(Map.of(
                     "status", false,
                     "message", "Shipment ID already exists. Try Again"));
@@ -286,6 +300,7 @@ public class VendorSessionBean {
             em.persist(product);
         }
 
+        LOGGER.info("Shipment saved successfully: " + shipmentId);
         return gson.toJson(Map.of(
                 "status", true,
                 "message", "Shipment saved successfully",
