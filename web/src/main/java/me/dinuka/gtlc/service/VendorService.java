@@ -6,6 +6,7 @@ import jakarta.inject.Inject;
 import jakarta.ws.rs.core.Response;
 import me.dinuka.gtlc.dto.vendorDTO;
 import me.dinuka.gtlc.ejb.VendorSessionBean;
+import me.dinuka.gtlc.exception.ValidationException;
 import me.dinuka.gtlc.util.JwtUtil;
 import me.dinuka.gtlc.util.RegexValidator;
 
@@ -149,45 +150,25 @@ public class VendorService {
                 String complianceInfo = dto.getComplianceInfo();
 
                 if (vendorId.isEmpty()){
-                    return Response.status(Response.Status.BAD_REQUEST).entity(
-                            Map.of("message", "Vendor ID is required")
-                    ).build();
+                    throw new ValidationException("Vendor ID is required");
                 } else if (companyName.isEmpty()){
-                    return Response.status(Response.Status.BAD_REQUEST).entity(
-                            Map.of("message", "Company Name is required")
-                    ).build();
+                    throw new ValidationException("Company Name is required");
                 } else if (contactPerson.isEmpty()) {
-                    return Response.status(Response.Status.BAD_REQUEST).entity(
-                            Map.of("message", "Contact Person is required")
-                    ).build();
+                    throw new ValidationException("Contact Person is required");
                 } else if (email.isEmpty()) {
-                    return Response.status(Response.Status.BAD_REQUEST).entity(
-                            Map.of("message", "Email is required")
-                    ).build();
+                    throw new ValidationException("Email is required");
                 } else if (phone.isEmpty()) {
-                    return Response.status(Response.Status.BAD_REQUEST).entity(
-                            Map.of("message", "Phone number is required")
-                    ).build();
+                    throw new ValidationException("Phone is required");
                 } else if (!RegexValidator.isValidSlPhone(phone)) {
-                    return Response.status(Response.Status.BAD_REQUEST).entity(
-                            Map.of("message", "Enter a valid phone number")
-                    ).build();
+                    throw new ValidationException("Enter a valid phone number");
                 }else if (address.isEmpty()) {
-                    return Response.status(Response.Status.BAD_REQUEST).entity(
-                            Map.of("message", "Address is required")
-                    ).build();
+                    throw new ValidationException("Address is required");
                 } else if (registrationNumber.isEmpty()) {
-                    return Response.status(Response.Status.BAD_REQUEST).entity(
-                            Map.of("message", "Registration Number is required")
-                    ).build();
+                    throw new ValidationException("Registration Number is required");
                 } else if (Integer.parseInt(countryId) <= 0) {
-                    return Response.status(Response.Status.BAD_REQUEST).entity(
-                            Map.of("message", "Country is required")
-                    ).build();
+                    throw new ValidationException("Country is required");
                 } else if (complianceInfo.isEmpty()) {
-                    return Response.status(Response.Status.BAD_REQUEST).entity(
-                            Map.of("message", "Compliance Information is required")
-                    ).build();
+                    throw new ValidationException("Compliance Information is required");
                 } else {
                     String saved = vendorSessionBean.saveVendorAccountOpenRequest(userEmail, dto);
 

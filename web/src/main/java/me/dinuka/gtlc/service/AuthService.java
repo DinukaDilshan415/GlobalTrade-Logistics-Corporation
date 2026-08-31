@@ -15,6 +15,8 @@ import me.dinuka.gtlc.dto.UserDTO;
 import me.dinuka.gtlc.ejb.RefreshTokenService;
 import me.dinuka.gtlc.ejb.UserAuthService;
 import me.dinuka.gtlc.entity.RefreshToken;
+import me.dinuka.gtlc.exception.InvalidCredentialsException;
+import me.dinuka.gtlc.exception.ValidationException;
 import me.dinuka.gtlc.util.JwtUtil;
 import me.dinuka.gtlc.util.RegexValidator;
 
@@ -38,17 +40,9 @@ public class AuthService {
         String password = dto.getPassword();
 
         if(email.isEmpty()){
-            return Response.status(Response.Status.BAD_REQUEST)
-                    .entity(Map.of(
-                            "message", "Email is required"
-                    ))
-                    .build();
+            throw new ValidationException("Email is required");
         }  else if(password.isEmpty()){
-            return Response.status(Response.Status.BAD_REQUEST)
-                    .entity(Map.of(
-                            "message", "Password is required"
-                    ))
-                    .build();
+            throw new ValidationException("Password is required");
         } else {
 
             UsernamePasswordCredential credential =
@@ -87,10 +81,7 @@ public class AuthService {
                         .build();
             }
 
-            return Response.status(Response.Status.UNAUTHORIZED)
-                    .entity(
-                            Map.of("error", "Invalid username or password")
-                    ).build();
+            throw new InvalidCredentialsException("Invalid username or password");
         }
     }
 
