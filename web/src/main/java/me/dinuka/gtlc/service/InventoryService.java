@@ -51,10 +51,13 @@ public class InventoryService {
                 DecodedJWT jwt = JwtUtil.parseToken(token);
                 String username = jwt.getSubject();
 
-                String added = inventorySessionBean.addNewInventory(body);
+                inventorySessionBean.addNewInventory(body);
 
                 return Response.status(Response.Status.OK)
-                        .entity(added)
+                        .entity(Map.of(
+                                "status", true,
+                                "message", "Inventory addition in progress"
+                        ))
                         .build();
             } else {
                 System.out.println("Invalid or expired token:");

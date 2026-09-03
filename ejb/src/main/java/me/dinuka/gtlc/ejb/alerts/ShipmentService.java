@@ -26,6 +26,8 @@ public class ShipmentService {
         List<Shipment> shipmentList = em.createNamedQuery("Shipment.findAll", Shipment.class).getResultList();
         
         for(Shipment shipment : shipmentList){
+            System.out.println(shipment.getShipmentIdString() + " | " + shipment.getExpectData());
+
             ShipmentProgress shipmentProgress = em.createNamedQuery("ShipmentProgress.findByShipmentDesc", ShipmentProgress.class)
                     .setParameter("shipment", shipment)
                     .setMaxResults(1).getSingleResult();

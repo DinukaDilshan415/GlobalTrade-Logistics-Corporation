@@ -1,10 +1,12 @@
 package me.dinuka.gtlc.ejb;
 
 import com.google.gson.Gson;
+import jakarta.ejb.Asynchronous;
 import jakarta.ejb.Stateless;
 import jakarta.ejb.TransactionAttribute;
 import jakarta.ejb.TransactionAttributeType;
 import jakarta.persistence.EntityManager;
+import jakarta.persistence.LockModeType;
 import jakarta.persistence.PersistenceContext;
 import me.dinuka.gtlc.annotation.Logged;
 import me.dinuka.gtlc.dto.InventoryDTO;
@@ -59,7 +61,9 @@ public class InventorySessionBean {
 
     }
 
-    public String addNewInventory(InventoryDTO dto){
+    @Asynchronous
+    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
+    public void addNewInventory(InventoryDTO dto){
         String product_name = dto.getProduct_name();
         String hs_code = dto.getHs_code();
         String quantity = dto.getQuantity();
@@ -70,37 +74,33 @@ public class InventorySessionBean {
                 .setParameter("id", Integer.valueOf(warehouses_id))
                 .getSingleResult();
 
-        List<Inventory> inventoryList = em.createNamedQuery("Inventory.findAll", Inventory.class).getResultList();
+        int quantityToAdd = Integer.parseInt(quantity);
 
-        boolean foundMatch = false;
+        List<Inventory> results = em.createQuery(
+            "SELECT i FROM Inventory i WHERE i.hsCode = :hsCode AND i.warehouse.id = :warehouseId",
+            Inventory.class
+        )
+        .setParameter("hsCode", hs_code)
+        .setParameter("warehouseId", Integer.valueOf(warehouses_id))
+        .setLockMode(LockModeType.PESSIMISTIC_WRITE)
+        .getResultList();
 
-        if (!inventoryList.isEmpty()) {
-            for (Inventory inventory : inventoryList) {
-                if (inventory.getHsCode().equals(hs_code) && Objects.equals(inventory.getWarehouse().getId(), warehouse.getId())) {
-                    System.out.println("Inventory Update: Updated quantity for HS Code " + hs_code);
-                    inventory.setQuantity(inventory.getQuantity() + Integer.parseInt(quantity));
-                    em.merge(inventory);
-                    foundMatch = true;
-                    break;
-                }
-            }
-        }
-
-        if (!foundMatch) {
+        if (!results.isEmpty()) {
+            Inventory inventory = results.get(0);
+            System.out.println("Inventory Update: Updated quantity for HS Code " + hs_code);
+            inventory.setQuantity(inventory.getQuantity() + quantityToAdd);
+            em.merge(inventory);
+        } else {
             System.out.println("New Inventory : Creating new inventory for HS Code " + hs_code);
             Inventory newInventory = new Inventory();
             newInventory.setProductName(product_name);
             newInventory.setHsCode(hs_code);
-            newInventory.setQuantity(Integer.valueOf(quantity));
+            newInventory.setQuantity(quantityToAdd);
             newInventory.setUnitValue(Integer.valueOf(unit_value));
             newInventory.setWarehouse(warehouse);
             em.persist(newInventory);
         }
 
         LOGGER.info("Inventory Added Successfully"+" | HS Code: "+hs_code+" | Quantity: "+quantity+" | Warehouse ID: "+warehouses_id);
-        return gson.toJson(Map.of(
-                "status", true,
-                "message", "Inventory Added Successfully"
-        ));
     }
 }
