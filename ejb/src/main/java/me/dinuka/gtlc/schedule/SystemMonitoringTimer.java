@@ -13,8 +13,8 @@ import java.lang.management.RuntimeMXBean;
 import java.time.LocalDateTime;
 import com.sun.management.OperatingSystemMXBean;
 
-//@Singleton
-//@Startup
+@Singleton
+@Startup
 public class SystemMonitoringTimer {
 
     @PersistenceContext(unitName = "gtlcPU")

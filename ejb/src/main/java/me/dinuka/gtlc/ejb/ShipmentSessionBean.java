@@ -359,10 +359,7 @@ public class ShipmentSessionBean {
                 shipQuantity = Integer.parseInt((String) shipQuantityObj);
             } else {
                 LOGGER.warning("Invalid shipment quantity format: " + shipQuantityObj.getClass().getName());
-                return gson.toJson(Map.of(
-                        "status", false,
-                        "message", "Invalid shipment quantity format"
-                ));
+                throw new IllegalArgumentException("Invalid shipment quantity format: " + shipQuantityObj.getClass().getName());
             }
 
             Inventory inventory = em.createNamedQuery("Inventory.findById", Inventory.class)
@@ -381,10 +378,7 @@ public class ShipmentSessionBean {
 
             } else {
                 LOGGER.warning("Not enough " + inventory.getProductName() + " in stock: " + id);
-                return gson.toJson(Map.of(
-                        "status", false,
-                        "message", "Not enough " + inventory.getProductName() + " in stock"
-                ));
+                throw new IllegalArgumentException("Not enough " + inventory.getProductName() + " in stock");
             }
         }
 
